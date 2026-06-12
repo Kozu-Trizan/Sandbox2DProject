@@ -4,7 +4,7 @@
 
 const int ScreenWidth = 1024;
 const int ScreenHeight = 512;
-const int BLOCK_SIZE = 64;
+const int BLOCK_SIZE = 16;
 
 Color SKY = { 135, 206, 235, 1 };
 
@@ -18,6 +18,10 @@ float WorldMap[][16] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+};
+
+struct Block {
+    int B_ID = 0;
 };
 
 class Player {
@@ -48,20 +52,20 @@ public:
     }
     
     bool PlayerCanFall() {
-        bool state = (WorldMap[PosY / BLOCK_SIZE + 2][PosX / BLOCK_SIZE] == 0); // Player Height = 2* Block size so the + 2 in array index
+        bool state = (WorldMap[PosY / BLOCK_SIZE + 1][PosX / BLOCK_SIZE] == 0); // Player Height = 1* Block size so the + 1 in array index
         (state) ? this->IsInAir = true : this->IsInAir = false;
         return state;
     }
 
     bool BlockInRange(std::vector<int> Pos) {
         bool InRangeHorizontal = std::abs(this->PosX / BLOCK_SIZE - Pos[0]) <= this->MineRange;
-        bool InRangeFromHead = (this->PosY / BLOCK_SIZE - Pos[1]) <= this->MineRange && (this->PosY / BLOCK_SIZE - Pos[1]) >= 0;
-        bool InRangeFromFoot = (Pos[1] - this->PosY / BLOCK_SIZE - 2) <= this->MineRange && (Pos[1] - this->PosY / BLOCK_SIZE - 2) >= 0;
-        return (InRangeHorizontal && (InRangeFromHead || InRangeFromFoot));
+        bool InRangeAbove = ((this->PosY / BLOCK_SIZE - Pos[1]) <= this->MineRange) && ((this->PosY / BLOCK_SIZE - Pos[1]) >= 0);
+        bool InRangeBelow = ((Pos[1] - this->PosY / BLOCK_SIZE - 1) <= this->MineRange) && ((Pos[1] - this->PosY / BLOCK_SIZE - 1) >= 0);
+        return (InRangeHorizontal && (InRangeAbove || InRangeBelow));
     }
 
     bool BlockIsVisible(std::vector<int> Pos) {
-        for (int i = Pos[1]; i > this->PosY / BLOCK_SIZE + 2; i--){
+        for (int i = Pos[1]; i > this->PosY / BLOCK_SIZE + 1; i--){
             if (WorldMap[i][Pos[0]] != 0) {
                 return false;
             }
@@ -72,7 +76,7 @@ public:
     Player(int PosX, int PosY) {
         this->PosX = PosX;
         this->PosY = PosY;
-        this->HeightP = 2 * BLOCK_SIZE;
+        this->HeightP = BLOCK_SIZE;
         this->WidthP = BLOCK_SIZE;
     }
 };
@@ -80,7 +84,8 @@ public:
 
 int main() {
     Player player(0, 0);
-    int velocity = 4;
+    int velocity = 2;
+    int JumpHeight = 2 * BLOCK_SIZE;
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
 
@@ -114,7 +119,7 @@ int main() {
 
         // Vertical Movement
         if (IsKeyPressed(KEY_SPACE)) {
-            player.Jump(BLOCK_SIZE);
+            player.Jump(JumpHeight);
         }
         
         // Breaking Blocks
@@ -134,4 +139,5 @@ int main() {
     }
     CloseWindow();
     return 0;
+    
 }
