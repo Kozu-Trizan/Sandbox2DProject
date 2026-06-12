@@ -9,17 +9,7 @@ const int BLOCK_SIZE = 16;
 Color SKY = { 135, 206, 235, 1 };
 
 
-float WorldMap[][16] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
-
+float WorldMap[ScreenHeight / BLOCK_SIZE][ScreenWidth / BLOCK_SIZE]; // World Map Array
 struct Block {
     int B_ID = 0;
 };
@@ -52,20 +42,27 @@ public:
     }
     
     bool PlayerCanFall() {
-        bool state = (WorldMap[PosY / BLOCK_SIZE + 1][PosX / BLOCK_SIZE] == 0); // Player Height = 1* Block size so the + 1 in array index
+        bool state = (WorldMap[PosY / BLOCK_SIZE + 1][PosX / BLOCK_SIZE] == 0); // Player Height = 1 * Block size so the + 1 in array index
         (state) ? this->IsInAir = true : this->IsInAir = false;
         return state;
     }
 
     bool BlockInRange(std::vector<int> Pos) {
         bool InRangeHorizontal = std::abs(this->PosX / BLOCK_SIZE - Pos[0]) <= this->MineRange;
-        bool InRangeAbove = ((this->PosY / BLOCK_SIZE - Pos[1]) <= this->MineRange) && ((this->PosY / BLOCK_SIZE - Pos[1]) >= 0);
-        bool InRangeBelow = ((Pos[1] - this->PosY / BLOCK_SIZE - 1) <= this->MineRange) && ((Pos[1] - this->PosY / BLOCK_SIZE - 1) >= 0);
-        return (InRangeHorizontal && (InRangeAbove || InRangeBelow));
+        int Lower = std::min(this->PosY / BLOCK_SIZE, Pos[1]);
+        int Upper = std::max(this->PosY / BLOCK_SIZE, Pos[1]);
+        bool InRangeAbove = ((Upper - Lower) <= this->MineRange);
+        //bool InRangeBelow = ((Pos[1] - this->PosY / BLOCK_SIZE - 1) <= this->MineRange) && ((Pos[1] - this->PosY / BLOCK_SIZE - 1) >= 0);
+        return (InRangeHorizontal && InRangeAbove);
     }
 
     bool BlockIsVisible(std::vector<int> Pos) {
-        for (int i = Pos[1]; i > this->PosY / BLOCK_SIZE + 1; i--){
+        int playerBlockY = this->PosY / BLOCK_SIZE;
+        // Check from player down to target block, excluding both endpoints
+        int startY = std::min(playerBlockY, Pos[1]);
+        if (startY == Pos[1]) startY++; // When mining below check from starting(Player) Y level, when mining above check from one level excluding the leven containing the block to mine
+        int endY = std::max(playerBlockY, Pos[1]);
+        for (int i = startY; i < endY; i++){
             if (WorldMap[i][Pos[0]] != 0) {
                 return false;
             }
@@ -81,6 +78,29 @@ public:
     }
 };
 
+void GenerateMap(float Map[][ScreenWidth / BLOCK_SIZE]) {
+    Block Air = { 0 };
+    Block Grass = { 2 };
+    Block Dirt = { 1 };
+    int RandNum(0);
+    for (int y = 0; y < ScreenHeight / BLOCK_SIZE; y++){
+        for (int x = 0; x < ScreenWidth / BLOCK_SIZE; x++){
+            RandNum = static_cast<int>(10 * (x + 1) * std::sin(y) + 10 * (x + 1) * std::cos(y) + 10 * (x + 1) * std::sin(y)) % 3;
+            switch (RandNum) {
+            case 0:
+                Map[y][x] = 0;
+                break;
+            case 1:
+                Map[y][x] = 1;
+                break;
+            case 2:
+                Map[y][x] = 2;
+                break;
+            }
+        }
+    }
+}
+
 
 int main() {
     Player player(0, 0);
@@ -89,17 +109,27 @@ int main() {
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
 
+    GenerateMap(WorldMap);
+
     while (!WindowShouldClose()) {
         BeginDrawing();
 
+        // Map Generation
         ClearBackground(SKY);
-        for (int x = 0; x < 8; x++){
-            for (int  y = 0; y < 16; y++){
-                if (WorldMap[x][y] == 0) {
+
+        for (int y = 0; y < ScreenHeight / BLOCK_SIZE; y++){
+            for (int  x = 0; x < ScreenWidth / BLOCK_SIZE; x++){
+                if (WorldMap[y][x] == 0) {
                     continue;
                 }
-                Rectangle Block(y * BLOCK_SIZE, x * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-                DrawRectangleRec(Block, BROWN);
+                else if (WorldMap[y][x] == 1) {
+                    Rectangle Block(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    DrawRectangleRec(Block, BROWN);
+                }
+                else if (WorldMap[y][x] == 2) {
+                    Rectangle Block(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    DrawRectangleRec(Block, GREEN);
+                }
             }
         }
 
