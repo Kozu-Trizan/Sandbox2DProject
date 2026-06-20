@@ -169,6 +169,9 @@ static void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency= 0
             if (y < SurfaceY) {
                 Univ[y][x] = Air;
             }
+            else if(y - SurfaceY == 0) {
+                Univ[y][x] = Grass;
+            }
             else {
                 Univ[y][x] = Dirt;
             }
@@ -182,9 +185,9 @@ static void DrawVisibleWorld(Block Univ[][UniverseWidth], Camera2D camera) {
     float VisibleWorldHeight = BottomRightBound.y - TopLeftBound.y;
     float VisibleWorldWidth = BottomRightBound.x - TopLeftBound.x;
 
-    for (int y = static_cast<int>((TopLeftBound.y / BLOCK_SIZE)); y < static_cast<int>(BottomRightBound.y / BLOCK_SIZE); y++) {
+    for (int y = static_cast<int>((TopLeftBound.y / BLOCK_SIZE)); y < static_cast<int>(BottomRightBound.y / BLOCK_SIZE) + 1; y++) { // + 1 in order to avoid clipping at the right and bottom boundaries.
         if (y < 0 || y >= UniverseHeight) continue;
-        for (int x = static_cast<int>(TopLeftBound.x / BLOCK_SIZE); x < static_cast<int>(BottomRightBound.x / BLOCK_SIZE); x++) {
+        for (int x = static_cast<int>(TopLeftBound.x / BLOCK_SIZE); x < static_cast<int>(BottomRightBound.x / BLOCK_SIZE) + 1; x++) {
             if (x < 0 || x >= UniverseWidth) continue;
 
             if (Univ[y][x].B_ID == 0) {
@@ -230,6 +233,7 @@ int main() {
     while (spawnY < UniverseHeight && Universe[spawnY][spawnX].B_ID == 0) {
         spawnY++;
     }
+    spawnY--; // Prevent Spawnning on a block
 
     Player player(spawnX * BLOCK_SIZE, spawnY * BLOCK_SIZE);
     int velocity = 2;
