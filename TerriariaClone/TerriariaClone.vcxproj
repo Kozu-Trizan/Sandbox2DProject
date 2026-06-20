@@ -145,7 +145,15 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MapGen.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="TerriariaClone.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Blocks.h" />
+    <ClInclude Include="Constant.h" />
+    <ClInclude Include="MapGen.h" />
+    <ClInclude Include="Player.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
