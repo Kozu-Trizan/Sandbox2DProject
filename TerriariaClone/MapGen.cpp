@@ -41,22 +41,38 @@ float Perlin1D::Noise(float CoordX) {
     return Interpolation(DistanceLeft * GradLeft, DistanceRight * GradRight, t);
 }
 
+float HeightFromPerlin(Perlin1D& Perlin, int PosX, float Frequency, float Amplitude, int BaseLevel, int Octaves) {
+    float Height = BaseLevel;
+    while (Octaves > 0) {
+        Height += (Perlin.Noise(Frequency * PosX) * Amplitude);
+        Frequency *= 2;
+        Amplitude /= 2;
+        Octaves--;
+    }
+    Height = std::min(Height, std::roundf(Height));
+    return Height;
+}
+
+void RemoveOneBlockSpike(Block Univ[][UniverseWidth]) {
+    // Check except boundaries to prevent array index out of range
+    for (int x = 1; x < UniverseWidth - 1; x++){
+        for (int y = 1; y < UniverseHeight - 1; y++) {
+            if (Univ[y][x].B_ID == Air.B_ID) continue;
+            if (
+                Univ[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
+                Univ[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
+                Univ[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
+                ) Univ[y][x] = Grass;
+        }
+    }
+}
 
 void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Amplitude, int BaseLevel, int Octaves) {
 
     Perlin1D Perlin;
 
     for (int x = 0; x < UniverseWidth; x++) {
-        int SurfaceY = BaseLevel;
-        float FrequencyCol = Frequency;
-        float AmplitudeCol = Amplitude;
-        int OctavesCol = Octaves;
-        while (OctavesCol > 0) {
-            SurfaceY += static_cast<int>(Perlin.Noise(FrequencyCol * x) * AmplitudeCol);
-            FrequencyCol *= 2;
-            AmplitudeCol /= 2;
-            OctavesCol--;
-        }
+        int SurfaceY = static_cast<int>(HeightFromPerlin(Perlin, x, Frequency, Amplitude, BaseLevel, Octaves));
 
         if (SurfaceY < 0) {
             SurfaceY = 0;
@@ -101,6 +117,9 @@ void DrawVisibleWorld(Block Univ[][UniverseWidth], Camera2D camera) {
             }
         }
     }
+
+    // Post processing
+    RemoveOneBlockSpike(Univ);
 }
 
 bool WorldBoundaryReached(Camera2D camera) {
