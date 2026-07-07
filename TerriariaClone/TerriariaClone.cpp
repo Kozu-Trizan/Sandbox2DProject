@@ -7,6 +7,8 @@
 #include "Blocks.h"
 #include "MapGen.h"
 #include "Player.h"
+#include "IsSolid.h"
+#include "CouldMove.h"
 
 Block Universe[UniverseHeight][UniverseWidth] = {};
 
@@ -61,20 +63,21 @@ int main() {
         }
         
 
-        // Player fall
         if (player.PlayerCanFall()) {
             player.UpdatePosY(velocity);
         }
 
-        //Horizontal Movement
-        if (IsKeyDown(KEY_RIGHT)) {
-            player.UpdatePosX(velocity);
-        }
-        else if (IsKeyDown(KEY_LEFT)) {
-            player.UpdatePosX(-velocity);
+        if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+        int nextx = (player.getx() + velocity)/BLOCK_SIZE;
+        int nexty = player.gety()/BLOCK_SIZE;
+        CouldMove(player, nextx,nexty,velocity);
+       }
+        else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+        int nextx = (player.getx() - velocity)/BLOCK_SIZE;
+        int nexty = player.gety()/BLOCK_SIZE;
+        CouldMove(player, nextx,nexty,-velocity);
         }
 
-        // Vertical Movement
         if (IsKeyPressed(KEY_SPACE)) {
             player.Jump(JumpHeight);
         }
@@ -113,3 +116,4 @@ int main() {
     return 0;
     
 }
+//nix-shell -p raylib gcc --run \ 'g++ TerriariaClone.cpp Player.cpp MapGen.cpp -o game \-lraylib -lm -ldl -lpthread -lGL && ./game'
