@@ -62,9 +62,34 @@ void RemoveOneBlockSpike(Block Univ[][UniverseWidth]) {
                 Univ[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
                 Univ[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
                 Univ[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
-                ) Univ[y][x] = Grass;
+                ) {
+                Univ[y][x] = Air;
+            }
+
+            // Make blocks continuous
+            if (
+                Univ[y][x + 1].B_ID == Univ[y][x - 1].B_ID && 
+                Univ[y][x].B_ID != Univ[y][x + 1].B_ID
+                ) Univ[y][x].B_ID = Univ[y][x + 1].B_ID;
         }
     }
+}
+
+// Smooth the World with Plateaus
+int Terracing(float PerlinHeight, int StepSize, float Sharpness, float WidthSteep) {
+    float Bias = 0;
+    PerlinHeight /= StepSize;
+    int IntegerPart = std::floorf(PerlinHeight);
+    float FracPart = PerlinHeight - static_cast<float>(IntegerPart);
+
+    if (FracPart < WidthSteep) {
+        Bias = WidthSteep * std::powf(2 * FracPart, Sharpness);
+    }
+    else {
+        Bias = 1 - WidthSteep * std::powf(2 * (1 - FracPart), Sharpness);
+    }
+
+    return static_cast<int>(IntegerPart + Bias) * StepSize;
 }
 
 void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Amplitude, int BaseLevel, int Octaves) {
@@ -72,7 +97,7 @@ void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Am
     Perlin1D Perlin;
 
     for (int x = 0; x < UniverseWidth; x++) {
-        int SurfaceY = static_cast<int>(HeightFromPerlin(Perlin, x, Frequency, Amplitude, BaseLevel, Octaves));
+        int SurfaceY = Terracing(HeightFromPerlin(Perlin, x, Frequency, Amplitude, BaseLevel, Octaves), 4, 3.8);
 
         if (SurfaceY < 0) {
             SurfaceY = 0;
@@ -85,7 +110,7 @@ void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Am
             if (y < SurfaceY) {
                 Univ[y][x] = Air;
             }
-            else if (y - SurfaceY == 0) {
+            else if (y == SurfaceY) {
                 Univ[y][x] = Grass;
             }
             else {
@@ -93,6 +118,13 @@ void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Am
             }
         }
     }
+
+    // Post processing
+    for (int i = 0; i < 5; i++)
+    {
+        RemoveOneBlockSpike(Univ);
+    }
+    
 }
 
 void DrawVisibleWorld(Block Univ[][UniverseWidth], Camera2D camera) {
@@ -117,9 +149,6 @@ void DrawVisibleWorld(Block Univ[][UniverseWidth], Camera2D camera) {
             }
         }
     }
-
-    // Post processing
-    RemoveOneBlockSpike(Univ);
 }
 
 bool WorldBoundaryReached(Camera2D camera) {

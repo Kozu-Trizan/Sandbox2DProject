@@ -89,8 +89,8 @@ int main() {
             PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
             std::vector<int> PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
 
-            if (Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID != 0 && player.BlockInRange(PosMouseMap) && player.BlockIsVisible(PosMouseMap)) {
-                Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = 0;
+            if (Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID != Air.B_ID && player.BlockInRange(PosMouseMap) && player.BlockIsVisible(PosMouseMap)) {
+                Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = Air.B_ID;
             }
 
         }
