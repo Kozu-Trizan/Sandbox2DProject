@@ -1,5 +1,6 @@
 #pragma once
 #include "Constant.h"
+#include <vector>
 
 class Player {
 private:
@@ -9,6 +10,9 @@ private:
     bool IsInAir;
     int MineRange;
     Rectangle player;
+    int leftblock;
+    int rightblock;
+    int aboveblock;
 
 public:
     void UpdatePosX(int velocity);
@@ -30,4 +34,8 @@ public:
     Player();
 
     Player(int PosX, int PosY);
+
+    int getx();
+
+    int gety();
 };

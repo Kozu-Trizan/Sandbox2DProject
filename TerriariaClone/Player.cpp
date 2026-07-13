@@ -2,6 +2,7 @@
 #include "Blocks.h"
 #include "MapGen.h"
 #include "Player.h"
+#include "IsSolid.h"
 
 void Player::UpdatePosX(int velocity) {
     this->PosX += velocity;
@@ -13,8 +14,22 @@ void Player::UpdatePosY(int velocity) {
 
 void Player::Jump(int JumpStep) {
     if (!this->IsInAir) {
+        aboveblock = (this->PosY-1)/BLOCK_SIZE;
+        if((IsSolid(this->leftblock,this->aboveblock)|| IsSolid(this->rightblock,this->aboveblock))==false)
+        {
         this->PosY -= JumpStep;
+        this->IsInAir = true;    
+        }
+        
     }
+}
+int Player::getx()
+{
+    return PosX;
+}
+int Player::gety()
+{
+    return PosY;
 }
 
 void Player::DrawPlayer() {
@@ -27,9 +42,25 @@ Rectangle& Player::GetPlayer() {
 }
 
 bool Player::PlayerCanFall() {
-    bool state = (Universe[PosY / BLOCK_SIZE + 1][PosX / BLOCK_SIZE].B_ID == Air.B_ID); // Player Height = 1 * Block size so the + 1 in array index
-    (state) ? this->IsInAir = true : this->IsInAir = false;
-    return state;
+   // bool state = (Universe[PosY / BLOCK_SIZE + 1][PosX / BLOCK_SIZE].B_ID == Air.B_ID); // Player Height = 1 * Block size so the + 1 in array index
+   // (state) ? this->IsInAir = true : this->IsInAir = false;
+    //return state;
+    bool state;
+        leftblock = PosX/BLOCK_SIZE; // locates the left part of the block
+        rightblock = (PosX + WidthP -1 )/BLOCK_SIZE;// locates the right part of the block
+        int blockbelow = (PosY + HeightP)/BLOCK_SIZE;//checks the block below the object
+        bool leftsolid = IsSolid(leftblock, blockbelow);//checks if the block is solid from the left refrence
+        bool rightsolid = IsSolid(rightblock, blockbelow);//checks if the block is solid from right refrence
+        if ((leftsolid || rightsolid) == false)//checks if either side of the object is touching the block below
+        {
+             state = true;
+        }
+        else
+        {
+             state = false;
+        }
+       IsInAir = state;
+        return state;
 }
 
 bool Player::BlockInRange(std::vector<int> Pos) {
