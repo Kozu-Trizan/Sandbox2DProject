@@ -16,13 +16,41 @@ void Player::Jump(int JumpStep) {
     if (!this->IsInAir) {
         aboveblock = (this->PosY-1)/BLOCK_SIZE;
         if((IsSolid(this->leftblock,this->aboveblock)|| IsSolid(this->rightblock,this->aboveblock))==false)
-        {
-        this->PosY -= JumpStep;
-        this->IsInAir = true;    
-        }
-        
+          { this->VelocityY = -JumpStep;      
+            this->IsInAir = true;
+          }
     }
 }
+void Player::UpdateGravity() {
+    this->VelocityY = this->VelocityY + 0.4f;
+    leftblock = this->PosX/BLOCK_SIZE;
+    rightblock = (this->PosX+this->WidthP-1)/BLOCK_SIZE;
+    if(this->VelocityY < 0)
+    {
+        aboveblock = (this->PosY-1)/BLOCK_SIZE;
+        if((IsSolid(this->leftblock,this->aboveblock)|| IsSolid(this->rightblock,this->aboveblock))==false)
+        {
+            UpdatePosY(this->VelocityY);
+        }
+        else{
+            VelocityY = 0;
+        }
+    }
+    else 
+    {
+        belowblock = (this->PosY + this->HeightP)/BLOCK_SIZE;
+        if((IsSolid(this->leftblock,this->belowblock)|| IsSolid(this->rightblock,this->belowblock))==false)
+        {
+            UpdatePosY(this->VelocityY);
+            IsInAir = true;
+        }
+        else{
+            VelocityY = 0;
+            this->IsInAir = false;
+        }
+        }
+    }
+    
 int Player::getx()
 {
     return PosX;
@@ -46,11 +74,11 @@ bool Player::PlayerCanFall() {
    // (state) ? this->IsInAir = true : this->IsInAir = false;
     //return state;
     bool state;
-        leftblock = PosX/BLOCK_SIZE; // locates the left part of the block
-        rightblock = (PosX + WidthP -1 )/BLOCK_SIZE;// locates the right part of the block
-        int blockbelow = (PosY + HeightP)/BLOCK_SIZE;//checks the block below the object
-        bool leftsolid = IsSolid(leftblock, blockbelow);//checks if the block is solid from the left refrence
-        bool rightsolid = IsSolid(rightblock, blockbelow);//checks if the block is solid from right refrence
+        leftblock = this->PosX/BLOCK_SIZE; // locates the left part of the block
+        rightblock = (this->PosX + this->WidthP -1 )/BLOCK_SIZE;// locates the right part of the block
+        belowblock = (this->PosY + this->HeightP)/BLOCK_SIZE;//checks the block below the object
+        bool leftsolid = IsSolid(leftblock, belowblock);//checks if the block is solid from the left refrence
+        bool rightsolid = IsSolid(rightblock, belowblock);//checks if the block is solid from right refrence
         if ((leftsolid || rightsolid) == false)//checks if either side of the object is touching the block below
         {
              state = true;

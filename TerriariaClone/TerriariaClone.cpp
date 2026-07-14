@@ -29,7 +29,7 @@ int main() {
 
     Player player(spawnX * BLOCK_SIZE, spawnY * BLOCK_SIZE);
     int velocity = 2;
-    int JumpHeight = 2 * BLOCK_SIZE;
+    int JumpHeight = 10;
     player.DrawPlayer();
 
     //Camera Configurations
@@ -68,19 +68,16 @@ int main() {
         }
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-        int nextx = (player.getx() + velocity)/BLOCK_SIZE;
-        int nexty = player.gety()/BLOCK_SIZE;
-        CouldMove(player, nextx,nexty,velocity);
+        CouldMove(player,velocity);
        }
         else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-        int nextx = (player.getx() - velocity)/BLOCK_SIZE;
-        int nexty = player.gety()/BLOCK_SIZE;
-        CouldMove(player, nextx,nexty,-velocity);
+        CouldMove(player,-velocity);
         }
 
         if (IsKeyPressed(KEY_SPACE)) {
             player.Jump(JumpHeight);
         }
+         player.UpdateGravity();
 
         // Breaking Blocks
         DrawText(TextFormat("X: %.2f, Y: %.2f", GetMousePosition().x, GetMousePosition().y), 0, 0, 20, RED);

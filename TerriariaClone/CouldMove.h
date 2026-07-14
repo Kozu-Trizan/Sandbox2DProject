@@ -2,4 +2,4 @@
 
 #include "Player.h"
 
-void CouldMove(Player& player, int nextx, int nexty, int velocity);
+void CouldMove(Player& player, int velocity);
