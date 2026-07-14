@@ -10,10 +10,10 @@ private:
     bool IsInAir;
     int MineRange;
     Rectangle player;
-    int leftblock;
-    int rightblock;
-    int aboveblock;
-    int belowblock;
+    int LeftBlock;
+    int RightBlock;
+    int AboveBlock;
+    int BelowBlock;
     float VelocityY;
     bool OnGround;
 
