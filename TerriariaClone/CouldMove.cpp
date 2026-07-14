@@ -1,7 +1,7 @@
 #include "CouldMove.h"
 #include "IsSolid.h"
 
-void CouldMove(Player& player,int nextx, int nexty, int velocity)
+void CouldMove(Player& player, int velocity)
 {
     int blockY = player.gety() / BLOCK_SIZE;
 

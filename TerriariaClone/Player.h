@@ -13,6 +13,9 @@ private:
     int leftblock;
     int rightblock;
     int aboveblock;
+    int belowblock;
+    float VelocityY;
+    bool OnGround;
 
 public:
     void UpdatePosX(int velocity);
@@ -20,6 +23,8 @@ public:
     void UpdatePosY(int velocity);
 
     void Jump(int JumpStep);
+
+    void UpdateGravity();
 
     void DrawPlayer();
 
