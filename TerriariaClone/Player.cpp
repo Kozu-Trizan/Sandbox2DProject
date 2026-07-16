@@ -16,7 +16,7 @@ void Player::Jump(int JumpStep) {
     if (!this->IsInAir) {
         AboveBlock = (this->PosY-1)/BLOCK_SIZE;
         if((IsSolid(this->LeftBlock,this->AboveBlock)|| IsSolid(this->RightBlock,this->AboveBlock))==false)
-          { this->VelocityY = -JumpStep;      
+          { this->VelocityY = -static_cast<float>(JumpStep);      
             this->IsInAir = true;
           }
     }
@@ -27,7 +27,7 @@ void Player::UpdateGravity() {
     RightBlock = (this->PosX+this->WidthP-1)/BLOCK_SIZE;
     if(this->VelocityY < 0)
     {
-        AboveBlock = (this->PosY-1)/BLOCK_SIZE;
+        AboveBlock = static_cast<int>((this->PosY-1)/BLOCK_SIZE);
         if((IsSolid(this->LeftBlock,this->AboveBlock)|| IsSolid(this->RightBlock,this->AboveBlock))==false)
         {
             UpdatePosY(this->VelocityY);
@@ -38,7 +38,7 @@ void Player::UpdateGravity() {
     }
     else 
     {
-        BelowBlock = (this->PosY + this->HeightP)/BLOCK_SIZE;
+        BelowBlock = static_cast<int>((this->PosY + this->HeightP)/BLOCK_SIZE);
         if((IsSolid(this->LeftBlock,this->BelowBlock)|| IsSolid(this->RightBlock,this->BelowBlock))==false)
         {
             UpdatePosY(this->VelocityY);

@@ -1,10 +1,11 @@
 #include <vector>
 #include <random>
+#include <numeric>
 #include "Constant.h"
 #include "Blocks.h"
 #include "MapGen.h"
 
-
+// Perlin1D class
 
 float Perlin1D::FadeFunc(float t) {
     return t * t * t * (t * (t * 6 - 15) + 10);
@@ -41,16 +42,75 @@ float Perlin1D::Noise(float CoordX) {
     return Interpolation(DistanceLeft * GradLeft, DistanceRight * GradRight, t);
 }
 
+// Perlin2D class
+Perlin2D::Perlin2D(unsigned int seed) {
+    std::vector<int> Permutation(256);
+    std::iota(Permutation.begin(), Permutation.end(), 0);
+
+    std::default_random_engine Engine(seed);
+    std::shuffle(Permutation.begin(), Permutation.end(), Engine);
+
+    // Duplicate the array to prevent indexing overflow during neighbor lookups
+    for (int i = 0; i < 256; i++) {
+        Perlin2D::PermutationTable[i] = Permutation[i];
+        Perlin2D::PermutationTable[i + 256] = Permutation[i];
+    }
+}
+
+Vector2 Perlin2D::GetGradient(int CoordX, int CoordY) {
+    // Hash coordinates using permutation table
+    int Hash = Perlin2D::PermutationTable[(Perlin2D::PermutationTable[CoordX & 255] + CoordY) & 255];
+    return Perlin2D::Gradients[Hash % 8];
+}
+
+float Perlin2D::GradientInfluence(Vector2 Grid, float CoordX, float CoordY) {
+    Vector2 Grad = Perlin2D::GetGradient(static_cast<int>(Grid.x), static_cast<int>(Grid.y));
+    float DisX = CoordX - Grid.x;
+    float DisY = CoordY - Grid.y;
+
+    return (DisX * Grad.x) + (DisY * Grad.y);
+}
+
+float Perlin2D::Noise(float CoordX, float CoordY) {
+    int x0 = static_cast<int>(CoordX);
+    int y0 = static_cast<int>(CoordY);
+    Vector2 BLeft = { static_cast<float>(x0), static_cast<float>(y0 + 1) };
+    Vector2 BRight = { static_cast<float>(x0 + 1), static_cast<float>(y0 + 1) };
+    Vector2 TLeft = { static_cast<float>(x0), static_cast<float>(y0) };
+    Vector2 TRight = { static_cast<float>(x0 + 1), static_cast<float>(y0) };
+
+    float DotBLeft = Perlin2D::GradientInfluence(BLeft, CoordX, CoordY);
+    float DotBRight = Perlin2D::GradientInfluence(BRight, CoordX, CoordY);
+    float DotTLeft =  Perlin2D::GradientInfluence(TLeft, CoordX, CoordY);
+    float DotTRight = Perlin2D::GradientInfluence(TRight, CoordX, CoordY);
+
+    float HorizontalWeight = Perlin1D::FadeFunc(CoordX - std::floorf(CoordX));
+    float VerticalWeight = Perlin1D::FadeFunc(CoordY - std::floorf(CoordY));
+
+    return Perlin1D::Interpolation(Perlin1D::Interpolation(DotBLeft, DotBRight, HorizontalWeight), Perlin1D::Interpolation(DotTLeft, DotTRight, HorizontalWeight), VerticalWeight);
+}
+
 float HeightFromPerlin(Perlin1D& Perlin, int PosX, float Frequency, float Amplitude, int BaseLevel, int Octaves) {
-    float Height = BaseLevel;
+    float Height = static_cast<float>(BaseLevel);
     while (Octaves > 0) {
-        Height += (Perlin.Noise(Frequency * PosX) * Amplitude);
-        Frequency *= 2;
-        Amplitude /= 2;
+        Height += (Perlin.Noise(Frequency * static_cast<float>(PosX)) * Amplitude);
+        Frequency *= 2.0f;
+        Amplitude /= 2.0f;
         Octaves--;
     }
     Height = std::min(Height, std::roundf(Height));
     return Height;
+}
+
+float NoiseForCave(Perlin2D& Cave, int PosX, int PosY, float CaveFreqX, float CaveFreqY, float Amplitude, int Octaves) {
+    float Noise = 0;
+    while (Octaves > 0) {
+        Noise += (Cave.Noise(static_cast<float>(PosX) * CaveFreqX, static_cast<float>(PosY) * CaveFreqY) * Amplitude);
+        CaveFreqX *= 2.0f;
+        Amplitude /= 2.0f;
+        Octaves--;
+    }
+    return Noise;
 }
 
 void RemoveOneBlockSpike(Block Univ[][UniverseWidth]) {
@@ -78,15 +138,15 @@ void RemoveOneBlockSpike(Block Univ[][UniverseWidth]) {
 // Smooth the World with Plateaus
 int Terracing(float PerlinHeight, int StepSize, float Sharpness, float WidthSteep) {
     float Bias = 0;
-    PerlinHeight /= StepSize;
-    int IntegerPart = std::floorf(PerlinHeight);
+    PerlinHeight /= static_cast<float>(StepSize);
+    int IntegerPart = static_cast<int>(std::floorf(PerlinHeight));
     float FracPart = PerlinHeight - static_cast<float>(IntegerPart);
 
     if (FracPart < WidthSteep) {
-        Bias = WidthSteep * std::powf(2 * FracPart, Sharpness);
+        Bias = WidthSteep * std::powf(2.0f * FracPart, Sharpness);
     }
     else {
-        Bias = 1 - WidthSteep * std::powf(2 * (1 - FracPart), Sharpness);
+        Bias = 1.0f - WidthSteep * std::powf(2.0f * (1.0f - FracPart), Sharpness);
     }
 
     return static_cast<int>(IntegerPart + Bias) * StepSize;
@@ -95,9 +155,10 @@ int Terracing(float PerlinHeight, int StepSize, float Sharpness, float WidthStee
 void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Amplitude, int BaseLevel, int Octaves) {
 
     Perlin1D Perlin;
+    Perlin2D Cave;
 
     for (int x = 0; x < UniverseWidth; x++) {
-        int SurfaceY = Terracing(HeightFromPerlin(Perlin, x, Frequency, Amplitude, BaseLevel, Octaves), 4, 3.8);
+        int SurfaceY = Terracing(HeightFromPerlin(Perlin, x, Frequency, Amplitude, BaseLevel, Octaves), 4, 3.8f);
 
         if (SurfaceY < 0) {
             SurfaceY = 0;
@@ -114,7 +175,14 @@ void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Am
                 Univ[y][x] = Grass;
             }
             else {
-                Univ[y][x] = Dirt;
+                // Only calculate cave noise for underground blocks
+                float CaveNoise = NoiseForCave(Cave, x, y, CAVE_FREQ_X, CAVE_FREQ_Y, CAVE_AMP, CAVE_OCTAVE);
+                if (CaveNoise > CAVE_THRESHOLD) {
+                    Univ[y][x] = Air;
+                }
+                else {
+                    Univ[y][x] = Dirt;
+                }
             }
         }
     }
@@ -124,7 +192,7 @@ void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Am
     {
         RemoveOneBlockSpike(Univ);
     }
-    
+
 }
 
 void DrawVisibleWorld(Block Univ[][UniverseWidth], Camera2D camera) {
