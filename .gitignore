@@ -18,6 +18,11 @@ mono_crash.*
 
 # Build results
 [Dd]ebug/
+
+# Local raylib builds (CPU compatibility setup)
+C:\raylib-src/
+raylib-src/
+*.pdb
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/

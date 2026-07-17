@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 
+	Raylib Property Sheet
+	Centralized raylib include/lib paths for all project configurations.
+	This allows the project to work with any raylib installation location.
+  -->
+
+  <!-- Default raylib location (works for most users) -->
+  <PropertyGroup>
+	<RaylibInstallPath Condition="'$(RaylibInstallPath)' == ''">C:\raylib-6.0_win64_msvc16</RaylibInstallPath>
+  </PropertyGroup>
+
+  <!-- Fallback to C:\raylib if versioned path doesn't exist -->
+  <PropertyGroup>
+	<RaylibInstallPath Condition="!Exists('$(RaylibInstallPath)')">C:\raylib</RaylibInstallPath>
+  </PropertyGroup>
+
+  <!-- Path definitions -->
+  <PropertyGroup>
+	<RaylibIncludePath>$(RaylibInstallPath)\include</RaylibIncludePath>
+	<RaylibLibPath>$(RaylibInstallPath)\lib</RaylibLibPath>
+  </PropertyGroup>
+
+</Project>

@@ -17,7 +17,7 @@ int main() {
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
 
-    GenerateVisibleWorld(Universe, 0.002f, 100.0f, 400, 8);
+    GenerateVisibleWorld(Universe, MAP_FREQ, MAP_AMP, MAP_BASE_LEVEL, MAP_OCTAVE);
 
     // Player Spawn Logic
     int spawnX = UniverseWidth / 2;

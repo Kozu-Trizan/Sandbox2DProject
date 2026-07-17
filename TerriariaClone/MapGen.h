@@ -10,15 +10,27 @@ class Perlin1D {
 private:
     std::vector<int> Gradients;
 
-    float FadeFunc(float t);
-
-    float Interpolation(float a, float b, float t);
-
 public:
     Perlin1D();
+    static float FadeFunc(float t);
+    static float Interpolation(float a, float b, float t);
     float Noise(float CoordX);
 };
 
+class Perlin2D {
+private:
+    int PermutationTable[512];
+    const Vector2 Gradients[8] = {
+        { 1.0f,  0.0f}, {-1.0f,  0.0f}, { 0.0f,  1.0f}, { 0.0f, -1.0f},
+        { 0.7071f,  0.7071f}, {-0.7071f,  0.7071f}, { 0.7071f, -0.7071f}, {-0.7071f, -0.7071f}
+    };
+
+public:
+    Perlin2D(unsigned int seed = 47);
+    Vector2 GetGradient(int x, int y);
+    float Noise(float CoordX, float CoordY);
+    float GradientInfluence(Vector2 Grid, float CoordX, float CoordY);
+};
 
 // Standalone Function Prototypes
 // Note: Default arguments (like Frequency = 0.01f) belong ONLY in the header file.
