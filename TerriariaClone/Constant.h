@@ -16,8 +16,8 @@ const float MAP_AMP = 100.0f;
 const int MAP_BASE_LEVEL = 400;
 const int MAP_OCTAVE = 8;
 
-const float CAVE_FREQ_X = 0.1f;
-const float CAVE_FREQ_Y = 0.2f;
-const float CAVE_AMP = 0.6f;
-const int CAVE_OCTAVE = 8;
-const float CAVE_THRESHOLD = 0.45f;
+const float CAVE_FREQ_X = 0.05f;
+const float CAVE_FREQ_Y = 0.08f;
+const float CAVE_AMP = 0.8f;
+const int CAVE_OCTAVE = 6;
+const float CAVE_THRESHOLD = 0.55f;
