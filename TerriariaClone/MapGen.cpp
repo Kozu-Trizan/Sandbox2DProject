@@ -1,6 +1,7 @@
 #include <vector>
 #include <random>
 #include <numeric>
+#include <cstring>
 #include "Constant.h"
 #include "Blocks.h"
 #include "MapGen.h"
@@ -113,27 +114,27 @@ float NoiseForCave(Perlin2D& Cave, int PosX, int PosY, float CaveFreqX, float Ca
     return Noise;
 }
 
-void RemoveOneBlockSpike(Block Univ[][UniverseWidth]) {
-    // Check except boundaries to prevent array index out of range
-    for (int x = 1; x < UniverseWidth - 1; x++){
-        for (int y = 1; y < UniverseHeight - 1; y++) {
-            if (Univ[y][x].B_ID == Air.B_ID) continue;
-            if (
-                Univ[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
-                Univ[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
-                Univ[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
-                ) {
-                Univ[y][x] = Air;
-            }
-
-            // Make blocks continuous
-            if (
-                Univ[y][x + 1].B_ID == Univ[y][x - 1].B_ID && 
-                Univ[y][x].B_ID != Univ[y][x + 1].B_ID
-                ) Univ[y][x].B_ID = Univ[y][x + 1].B_ID;
-        }
-    }
-}
+//void RemoveOneBlockSpike(Block **Univ) {
+//    // Check except boundaries to prevent array index out of range
+//    for (int x = 1; x < UniverseWidth - 1; x++){
+//        for (int y = 1; y < UniverseHeight - 1; y++) {
+//            if (Univ[y][x].B_ID == Air.B_ID) continue;
+//            if (
+//                Univ[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
+//                Univ[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
+//                Univ[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
+//                ) {
+//                Univ[y][x] = Air;
+//            }
+//
+//            // Make blocks continuous
+//            if (
+//                Univ[y][x + 1].B_ID == Univ[y][x - 1].B_ID && 
+//                Univ[y][x].B_ID != Univ[y][x + 1].B_ID
+//                ) Univ[y][x].B_ID = Univ[y][x + 1].B_ID;
+//        }
+//    }
+//}
 
 // Smooth the World with Plateaus
 int Terracing(float PerlinHeight, int StepSize, float Sharpness, float WidthSteep) {
@@ -152,7 +153,7 @@ int Terracing(float PerlinHeight, int StepSize, float Sharpness, float WidthStee
     return static_cast<int>(IntegerPart + Bias) * StepSize;
 }
 
-void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Amplitude, int BaseLevel, int Octaves) {
+void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int BaseLevel, int Octaves) {
 
     Perlin1D Perlin;
     Perlin2D Cave;
@@ -177,7 +178,7 @@ void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Am
             else {
                 // Only calculate cave noise for underground blocks
                 float CaveNoise = NoiseForCave(Cave, x, y, CAVE_FREQ_X, CAVE_FREQ_Y, CAVE_AMP, CAVE_OCTAVE);
-                if (CaveNoise > CAVE_THRESHOLD) {
+                if (CaveNoise > CAVE_THRESHOLD && y > SurfaceY + 30) {
                     Univ[y][x] = Air;
                 }
                 else {
@@ -188,14 +189,62 @@ void GenerateVisibleWorld(Block Univ[][UniverseWidth], float Frequency, float Am
     }
 
     // Post processing
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 20; i++)
     {
-        RemoveOneBlockSpike(Univ);
+        Automata(Univ);
     }
 
 }
 
-void DrawVisibleWorld(Block Univ[][UniverseWidth], Camera2D camera) {
+void Automata(Block **Univ) {
+    Block **UnivBuffer = nullptr;
+
+    UnivBuffer = new Block*[UniverseHeight];
+    for (int i = 0; i < UniverseHeight; i++) {
+        UnivBuffer[i] = new Block[UniverseWidth];
+    }
+
+    std::memcpy(UnivBuffer, Univ, sizeof(Univ));
+    int Dilation = 0;
+    int Errosion = 0;
+    Block ReplacementBlock = Dirt;
+    for (int x = 2; x < UniverseWidth - 2; x++){
+        for (int y = 2; y < UniverseHeight - 2; y++){
+            if (UnivBuffer[y][x].B_ID == Air.B_ID) {
+                (UnivBuffer[(y - 1)][(x - 1)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+                (UnivBuffer[(y - 1)][(x)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+                (UnivBuffer[(y - 1)][(x + 1)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+                (UnivBuffer[(y)][(x - 1)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+                (UnivBuffer[(y)][(x + 1)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+                (UnivBuffer[(y + 1)][(x - 1)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+                (UnivBuffer[(y + 1)][(x)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+                (UnivBuffer[(y + 1)][(x + 1)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
+            }
+            else {
+                (UnivBuffer[(y - 1)][(x - 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+                (UnivBuffer[(y - 1)][(x)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+                (UnivBuffer[(y - 1)][(x + 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+                (UnivBuffer[(y)][(x - 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+                (UnivBuffer[(y)][(x + 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+                (UnivBuffer[(y + 1)][(x - 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+                (UnivBuffer[(y + 1)][(x)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+                (UnivBuffer[(y + 1)][(x + 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
+
+            }
+            if (Dilation >= 4) {
+                Univ[y][x] = ReplacementBlock;
+            }
+            if (Errosion >= 5) {
+                Univ[y][x] = Air;
+            }
+
+        }
+
+    }
+
+}
+
+void DrawVisibleWorld(Block **Univ, Camera2D camera) {
     Vector2 TopLeftBound = GetScreenToWorld2D(Vector2{ 0, 0 }, camera);
     Vector2 BottomRightBound = GetScreenToWorld2D({ (float)ScreenWidth, (float)ScreenHeight }, camera);
     float VisibleWorldHeight = BottomRightBound.y - TopLeftBound.y;

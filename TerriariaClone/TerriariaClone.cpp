@@ -10,10 +10,14 @@
 #include "IsSolid.h"
 #include "CouldMove.h"
 
-Block Universe[UniverseHeight][UniverseWidth] = {};
-
+Block** Universe = nullptr;
 
 int main() {  
+    Universe = new Block * [UniverseHeight];
+    for (int i = 0; i < UniverseHeight; i++)
+    {
+        Universe[i] = new Block[UniverseWidth];
+    }
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
 
@@ -110,6 +114,10 @@ int main() {
     // ---------------------------------------------------------------------------------------------------------------------------
     }
     CloseWindow();
+    for (int i = 0; i < UniverseHeight; ++i) {
+        delete[] Universe[i];
+    }
+    delete[] Universe;
     return 0;
     
 }

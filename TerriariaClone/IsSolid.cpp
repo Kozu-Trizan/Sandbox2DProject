@@ -1,6 +1,5 @@
 #include "IsSolid.h"
-
-extern Block Universe[UniverseHeight][UniverseWidth];
+#include "MapGen.h"
 
 bool IsSolid(int blockX, int blockY)
 {
