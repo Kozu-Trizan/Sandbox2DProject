@@ -84,17 +84,7 @@ int main() {
          player.UpdateGravity();
 
         // Breaking Blocks
-        DrawText(TextFormat("X: %.2f, Y: %.2f", GetMousePosition().x, GetMousePosition().y), 0, 0, 20, RED);
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
-            PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
-            std::vector<int> PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
 
-            if (Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID != Air.B_ID && player.BlockInRange(PosMouseMap) && player.BlockIsVisible(PosMouseMap)) {
-                Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = Air.B_ID;
-            }
-
-        }
     //--------------------------------------------------------------------------------------------------------------------
 
         BeginDrawing();
