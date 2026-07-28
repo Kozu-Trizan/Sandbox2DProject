@@ -19,17 +19,11 @@ int main() {
 
     GenerateVisibleWorld(Universe, MAP_FREQ, MAP_AMP, MAP_BASE_LEVEL, MAP_OCTAVE);
 
-    // Player Spawn Logic
-    int spawnX = UniverseWidth / 2;
-    int spawnY = 0;
-    while (spawnY < UniverseHeight && Universe[spawnY][spawnX].B_ID == 0) {
-        spawnY++;
-    }
-    spawnY--; // Prevent Spawnning on a block
-
-    Player player(spawnX * BLOCK_SIZE, spawnY * BLOCK_SIZE);
+    Player player;
     int velocity = 2;
     int JumpHeight = 10;
+
+    player.Spawn();
     player.DrawPlayer();
 
     //Camera Configurations

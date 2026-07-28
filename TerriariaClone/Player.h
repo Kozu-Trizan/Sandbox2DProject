@@ -18,6 +18,8 @@ private:
     bool OnGround;
 
 public:
+    void Spawn();
+
     void UpdatePosX(int velocity);
 
     void UpdatePosY(int velocity);
