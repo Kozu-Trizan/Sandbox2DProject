@@ -8,7 +8,7 @@
 #include "MapGen.h"
 #include "Player.h"
 #include "IsSolid.h"
-#include "CouldMove.h"
+#include "Move.h"
 
 Block Universe[UniverseHeight][UniverseWidth] = {};
 
@@ -68,10 +68,10 @@ int main() {
         }
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-        CouldMove(player,velocity);
+        Move(player,velocity);
        }
         else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-        CouldMove(player,-velocity);
+        Move(player,-velocity);
         }
 
         if (IsKeyPressed(KEY_SPACE)) {

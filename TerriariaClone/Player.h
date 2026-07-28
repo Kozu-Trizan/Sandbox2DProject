@@ -43,4 +43,6 @@ public:
     int getx();
 
     int gety();
+
+    friend void Move(Player& player, int velocity);
 };

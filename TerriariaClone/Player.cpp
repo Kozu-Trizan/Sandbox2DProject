@@ -3,6 +3,7 @@
 #include "MapGen.h"
 #include "Player.h"
 #include "IsSolid.h"
+#include "BresenhamAlgorithm.h"
 
 void Player::UpdatePosX(int velocity) {
     this->PosX += velocity;
@@ -101,16 +102,14 @@ bool Player::BlockInRange(std::vector<int> Pos) {
 
 bool Player::BlockIsVisible(std::vector<int> Pos) {
     int playerBlockY = this->PosY / BLOCK_SIZE;
-    // Check from player down to target block, excluding both endpoints
-    int startY = std::min(playerBlockY, Pos[1]);
-    if (startY == Pos[1]) startY++; // When mining below check from starting(Player) Y level, when mining above check from one level excluding the leven containing the block to mine
-    int endY = std::max(playerBlockY, Pos[1]);
-    for (int i = startY; i < endY; i++) {
-        if (Universe[i][Pos[0]].B_ID != 0) {
-            return false;
-        }
-    }
-    return true;
+    int playerBlockX = this->PosX / BLOCK_SIZE;
+    int x0 = std::min(playerBlockX, Pos[0]);
+    int y0 = (x0 == playerBlockX) ? playerBlockY : Pos[1];
+    int x1 = std::max(Pos[0], playerBlockX);
+    int y1 = (x1 == playerBlockX) ? playerBlockY : Pos[1];
+    
+    bool visible = CanReach(x0, y0, x1, y1);
+    return visible;
 }
 
 Player::Player() {

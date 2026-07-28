@@ -145,7 +145,8 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CouldMove.cpp" />
+    <ClCompile Include="BresenhamAlgorithm.cpp" />
+    <ClCompile Include="Move.cpp" />
     <ClCompile Include="IsSolid.cpp" />
     <ClCompile Include="MapGen.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -153,7 +154,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blocks.h" />
+    <ClInclude Include="BresenhamAlgorithm.h" />
     <ClInclude Include="Constant.h" />
+    <ClInclude Include="Move.h" />
     <ClInclude Include="MapGen.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>
