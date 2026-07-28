@@ -116,14 +116,8 @@ bool Player::BlockInRange(std::vector<int> Pos) {
 bool Player::BlockIsVisible(std::vector<int> Pos) {
     int playerBlockY = this->PosY / BLOCK_SIZE;
     int playerBlockX = this->PosX / BLOCK_SIZE;
-    if (playerBlockY < Pos[1]) playerBlockY += (this->HeightP / BLOCK_SIZE) - 1;
-    int x0 = std::min(playerBlockX, Pos[0]);
-    int y0 = (x0 == playerBlockX) ? playerBlockY : Pos[1];
-    int x1 = std::max(Pos[0], playerBlockX); // Must reverse the order of arguments to handle both values being equal
-    int y1 = (x1 == Pos[0]) ? Pos[1] : playerBlockY; // Must reverse the order of arguments to handle both values being equal
     
-    bool visible = CanReach(x0, y0, x1, y1);
-    return visible;
+    return CanReach(playerBlockX, playerBlockY, Pos[0], Pos[1]);
 }
 
 Player::Player() {
@@ -144,20 +138,3 @@ Player::Player() {
     this->LeftBlock = 0;
 }
 
-Player::Player(int PosX, int PosY) {
-    this->PosX = PosX;
-    this->PosY = PosY;
-    this->HeightP = BLOCK_SIZE * 3;
-    this->WidthP = BLOCK_SIZE;
-    this->colorP = RAYWHITE;
-    this->IsInAir = true;
-    this->MineRange = 2;
-    this->player = { 0 };
-
-    this->VelocityY = 0;
-    this->OnGround = true;
-    this->AboveBlock = 0;
-    this->BelowBlock = 0;
-    this->RightBlock = 0;
-    this->LeftBlock = 0;
-}
