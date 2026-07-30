@@ -3,6 +3,20 @@
 #include "MapGen.h"
 #include "Player.h"
 #include "IsSolid.h"
+#include "BresenhamAlgorithm.h"
+
+void Player::Spawn() {
+    // Player Spawn Logic
+    int spawnX = UniverseWidth / 2;
+    int spawnY = 0;
+    while (spawnY < UniverseHeight && Universe[spawnY][spawnX].B_ID == 0) {
+        spawnY++;
+    }
+    spawnY--; // Prevent Spawnning on a block
+
+    this->PosX = spawnX * BLOCK_SIZE;
+    this->PosY = spawnY * BLOCK_SIZE - this->HeightP;
+}
 
 void Player::UpdatePosX(int velocity) {
     this->PosX += velocity;
@@ -93,48 +107,23 @@ bool Player::PlayerCanFall() {
 
 bool Player::BlockInRange(std::vector<int> Pos) {
     bool InRangeHorizontal = std::abs(this->PosX / BLOCK_SIZE - Pos[0]) <= this->MineRange;
-    int Lower = std::min(this->PosY / BLOCK_SIZE, Pos[1]);
-    int Upper = std::max(this->PosY / BLOCK_SIZE, Pos[1]);
-    bool InRangeAbove = ((Upper - Lower) <= this->MineRange);
-    return (InRangeHorizontal && InRangeAbove);
+    int FromHead = (this->PosY / BLOCK_SIZE - Pos[1]);
+    int FromFoot = (this->PosY / BLOCK_SIZE + (this->HeightP / BLOCK_SIZE - 1) - Pos[1]); // Foot at player height - 1 block for head
+    bool InRangeVertical = std::abs(FromHead) <= this->MineRange || std::abs(FromFoot) <= this->MineRange;
+    return (InRangeHorizontal && InRangeVertical);
 }
 
 bool Player::BlockIsVisible(std::vector<int> Pos) {
     int playerBlockY = this->PosY / BLOCK_SIZE;
-    // Check from player down to target block, excluding both endpoints
-    int startY = std::min(playerBlockY, Pos[1]);
-    if (startY == Pos[1]) startY++; // When mining below check from starting(Player) Y level, when mining above check from one level excluding the leven containing the block to mine
-    int endY = std::max(playerBlockY, Pos[1]);
-    for (int i = startY; i < endY; i++) {
-        if (Universe[i][Pos[0]].B_ID != 0) {
-            return false;
-        }
-    }
-    return true;
+    int playerBlockX = this->PosX / BLOCK_SIZE;
+    
+    return CanReach(playerBlockX, playerBlockY, Pos[0], Pos[1]);
 }
 
 Player::Player() {
     this->PosX = 0;
     this->PosY = 0;
-    this->HeightP = 0;
-    this->WidthP = 0;
-    this->colorP = RAYWHITE;
-    this->IsInAir = true;
-    this->MineRange = 2;
-    this->player = { 0 };
-
-    this->VelocityY = 0;
-    this->OnGround = true;
-    this->AboveBlock = 0;
-    this->BelowBlock = 0;
-    this->RightBlock = 0;
-    this->LeftBlock = 0;
-}
-
-Player::Player(int PosX, int PosY) {
-    this->PosX = PosX;
-    this->PosY = PosY;
-    this->HeightP = BLOCK_SIZE;
+    this->HeightP = BLOCK_SIZE * 3;
     this->WidthP = BLOCK_SIZE;
     this->colorP = RAYWHITE;
     this->IsInAir = true;
@@ -148,3 +137,4 @@ Player::Player(int PosX, int PosY) {
     this->RightBlock = 0;
     this->LeftBlock = 0;
 }
+

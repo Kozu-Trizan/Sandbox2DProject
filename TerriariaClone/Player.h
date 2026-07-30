@@ -18,6 +18,8 @@ private:
     bool OnGround;
 
 public:
+    void Spawn();
+
     void UpdatePosX(int velocity);
 
     void UpdatePosY(int velocity);
@@ -43,4 +45,6 @@ public:
     int getx();
 
     int gety();
+
+    friend void Move(Player& player, int velocity);
 };
