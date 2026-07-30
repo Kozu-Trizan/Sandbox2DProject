@@ -9,13 +9,14 @@
 #include "Player.h"
 #include "IsSolid.h"
 #include "Move.h"
+#include "GetTexture.h"
 
 Block Universe[UniverseHeight][UniverseWidth] = {};
-
 
 int main() {  
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
+    InitializeTexture();
 
     GenerateVisibleWorld(Universe, MAP_FREQ, MAP_AMP, MAP_BASE_LEVEL, MAP_OCTAVE);
 
@@ -28,6 +29,7 @@ int main() {
 
     //Camera Configurations
     Camera2D camera = { 0 };
+
     camera.target = { player.GetPlayer().x + BLOCK_SIZE / 2, player.GetPlayer().y + BLOCK_SIZE / 2 };
     camera.offset = { ScreenWidth / 2.0f, ScreenHeight / 2.0f };
     camera.rotation = 0.0f;
@@ -74,7 +76,6 @@ int main() {
          player.UpdateGravity();
 
         // Breaking Blocks
-        DrawText(TextFormat("X: %.2f, Y: %.2f", GetMousePosition().x, GetMousePosition().y), 0, 0, 20, RED);
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
             PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
@@ -90,7 +91,10 @@ int main() {
         BeginDrawing();
 
         // Map Generation
-        ClearBackground(SKY);
+        ClearBackground(WHITE);
+        
+        DrawBackground();
+        DrawParallax(camera);
 
         BeginMode2D(camera);
         
@@ -103,6 +107,7 @@ int main() {
         EndDrawing();
     // ---------------------------------------------------------------------------------------------------------------------------
     }
+    DeInitializeTexture();
     CloseWindow();
     return 0;
     

@@ -146,6 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BresenhamAlgorithm.cpp" />
+    <ClCompile Include="GetTexture.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="IsSolid.cpp" />
     <ClCompile Include="MapGen.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Blocks.h" />
     <ClInclude Include="BresenhamAlgorithm.h" />
     <ClInclude Include="Constant.h" />
+    <ClInclude Include="GetTexture.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="MapGen.h" />
     <ClInclude Include="Player.h" />
