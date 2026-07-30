@@ -11,9 +11,14 @@
 #include "Move.h"
 #include "GetTexture.h"
 
-Block Universe[UniverseHeight][UniverseWidth] = {};
+Block** Universe = nullptr;
 
 int main() {  
+    Universe = new Block * [UniverseHeight];
+    for (int i = 0; i < UniverseHeight; i++)
+    {
+        Universe[i] = new Block[UniverseWidth];
+    }
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
     InitializeTexture();
@@ -81,11 +86,12 @@ int main() {
             PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
             std::vector<int> PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
 
-            if (Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID != Air.B_ID && player.BlockInRange(PosMouseMap) && player.BlockIsVisible(PosMouseMap)) {
-                Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = Air.B_ID;
-            }
+             if (Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID != Air.B_ID && player.BlockInRange(PosMouseMap) && player.BlockIsVisible(PosMouseMap)) {
+                 Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = Air.B_ID;
+             }
 
-        }
+         }
+
     //--------------------------------------------------------------------------------------------------------------------
 
         BeginDrawing();
@@ -109,6 +115,10 @@ int main() {
     }
     DeInitializeTexture();
     CloseWindow();
+    for (int i = 0; i < UniverseHeight; ++i) {
+        delete[] Universe[i];
+    }
+    delete[] Universe;
     return 0;
     
 }
