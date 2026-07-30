@@ -114,27 +114,27 @@ float NoiseForCave(Perlin2D& Cave, int PosX, int PosY, float CaveFreqX, float Ca
     return Noise;
 }
 
-//void RemoveOneBlockSpike(Block **Univ) {
-//    // Check except boundaries to prevent array index out of range
-//    for (int x = 1; x < UniverseWidth - 1; x++){
-//        for (int y = 1; y < UniverseHeight - 1; y++) {
-//            if (Univ[y][x].B_ID == Air.B_ID) continue;
-//            if (
-//                Univ[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
-//                Univ[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
-//                Univ[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
-//                ) {
-//                Univ[y][x] = Air;
-//            }
-//
-//            // Make blocks continuous
-//            if (
-//                Univ[y][x + 1].B_ID == Univ[y][x - 1].B_ID && 
-//                Univ[y][x].B_ID != Univ[y][x + 1].B_ID
-//                ) Univ[y][x].B_ID = Univ[y][x + 1].B_ID;
-//        }
-//    }
-//}
+void RemoveOneBlockSpike(Block **Univ) {
+    // Check except boundaries to prevent array index out of range
+    for (int x = 1; x < UniverseWidth - 1; x++){
+        for (int y = 1; y < UniverseHeight - 1; y++) {
+            if (Univ[y][x].B_ID == Air.B_ID) continue;
+            if (
+                Univ[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
+                Univ[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
+                Univ[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
+                ) {
+                Univ[y][x] = Air;
+            }
+
+            // Make blocks continuous
+            if (
+                Univ[y][x + 1].B_ID == Univ[y][x - 1].B_ID && 
+                Univ[y][x].B_ID != Univ[y][x + 1].B_ID
+                ) Univ[y][x].B_ID = Univ[y][x + 1].B_ID;
+        }
+    }
+}
 
 // Smooth the World with Plateaus
 int Terracing(float PerlinHeight, int StepSize, float Sharpness, float WidthSteep) {
@@ -192,6 +192,7 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
     for (int i = 0; i < 20; i++)
     {
         Automata(Univ);
+        RemoveOneBlockSpike(Univ);
     }
 
 }
