@@ -273,11 +273,18 @@ Player::Player() {
     this->HP = 100;
     this->WasMining = false;
 
-    this->animationRow = 0.0f;
-    this->jumpAnimationRow = 0.0f;
     this->currentFrame = 0;
     this->animationTimer = 0.0f;
+    this->frameDuration = 0.15f;
+    this->animationRow = 64.0f;
+    this->jumpAnimationRow = 64.0f;
+    // Load texture from the 2D_character folder that you added to the project
+    // Make sure the file (e.g., scarfy.png) is added to the project and copied to the output directory
+    this->walkTexture = LoadTexture("C:/terrarria/Sandbox2DProject/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Walk/walk.png");
+    this->jumpTexture = LoadTexture("C:/terrarria/Sandbox2DProject/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Jump - NEW/Normal/Jump.png");
 }
+
+
 
 Player::~Player() {
     // Cleanup textures if they were loaded
