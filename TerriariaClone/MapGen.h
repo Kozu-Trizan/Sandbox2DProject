@@ -39,7 +39,7 @@ float HeightFromPerlin(Perlin1D& Perlin, int PosX, float Frequency, float Amplit
 //void RemoveOneBlockSpike(Block Univ[][UniverseWidth]);
 int Terracing(float PerlinHeight, int StepSize = 5, float Sharpness = 3.4, float WidthSteep=0.5);
 
-void Automata(Block **Univ);
+void Automata(Block **Univ, Block **UnivBuffer);
 
 void GenerateVisibleWorld(Block **Univ, float Frequency = 0.01f, float Amplitude = 100.0f, int BaseLevel = 400, int Octaves = 1);
 void DrawVisibleWorld(Block **Univ, Camera2D camera);

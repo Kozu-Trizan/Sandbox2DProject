@@ -26,6 +26,29 @@ void Player::UpdatePosY(int velocity) {
     this->PosY += velocity;
 }
 
+void Player::Mine(Camera2D camera) {
+    Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
+    PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
+    BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
+    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) { 
+
+        if (Universe[PosMouseMap.y][PosMouseMap.x].B_ID != Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap)) {
+            //Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = Air.B_ID;
+            this->WasMining = true;
+            if (Universe[PosMouseMap.y][PosMouseMap.x].HP > 0) {
+                Universe[PosMouseMap.y][PosMouseMap.x].HP -= this->Damage;
+            }
+            else {
+                Universe[PosMouseMap.y][PosMouseMap.x].B_ID = Air.B_ID;
+            }
+        }
+
+    }
+    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && this->WasMining == true) {
+        Universe[PosMouseMap.y][PosMouseMap.x].HP = Universe[PosMouseMap.y][PosMouseMap.x].BaseHP;
+    }
+}
+
 void Player::Jump(int JumpStep) {
     if (!this->IsInAir) {
         AboveBlock = (this->PosY-1)/BLOCK_SIZE;
@@ -105,19 +128,19 @@ bool Player::PlayerCanFall() {
         return state;
 }
 
-bool Player::BlockInRange(std::vector<int> Pos) {
-    bool InRangeHorizontal = std::abs(this->PosX / BLOCK_SIZE - Pos[0]) <= this->MineRange;
-    int FromHead = (this->PosY / BLOCK_SIZE - Pos[1]);
-    int FromFoot = (this->PosY / BLOCK_SIZE + (this->HeightP / BLOCK_SIZE - 1) - Pos[1]); // Foot at player height - 1 block for head
+bool Player::BlockInRange(BlockPos Pos) {
+    bool InRangeHorizontal = std::abs(this->PosX / BLOCK_SIZE - Pos.x) <= this->MineRange;
+    int FromHead = (this->PosY / BLOCK_SIZE - Pos.y);
+    int FromFoot = (this->PosY / BLOCK_SIZE + (this->HeightP / BLOCK_SIZE - 1) - Pos.y); // Foot at player height - 1 block for head
     bool InRangeVertical = std::abs(FromHead) <= this->MineRange || std::abs(FromFoot) <= this->MineRange;
     return (InRangeHorizontal && InRangeVertical);
 }
 
-bool Player::BlockIsVisible(std::vector<int> Pos) {
+bool Player::BlockIsVisible(BlockPos Pos) {
     int playerBlockY = this->PosY / BLOCK_SIZE;
     int playerBlockX = this->PosX / BLOCK_SIZE;
     
-    return CanReach(playerBlockX, playerBlockY, Pos[0], Pos[1]);
+    return CanReach(playerBlockX, playerBlockY, Pos.x, Pos.y);
 }
 
 Player::Player() {
@@ -136,5 +159,9 @@ Player::Player() {
     this->BelowBlock = 0;
     this->RightBlock = 0;
     this->LeftBlock = 0;
+
+    this->Damage = 0.2f;
+    this->HP = 100;
+    this->WasMining = false;
 }
 

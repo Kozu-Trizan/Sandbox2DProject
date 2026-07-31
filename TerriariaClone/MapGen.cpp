@@ -176,41 +176,51 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
                 Univ[y][x] = Grass;
             }
             else {
-                // Only calculate cave noise for underground blocks
-                float CaveNoise = NoiseForCave(Cave, x, y, CAVE_FREQ_X, CAVE_FREQ_Y, CAVE_AMP, CAVE_OCTAVE);
-                if (CaveNoise > CAVE_THRESHOLD && y > SurfaceY + 30) {
-                    Univ[y][x] = Air;
+                // Only calculate cave noise deep enough underground
+                if (y > SurfaceY + 30) {
+                    float CaveNoise = NoiseForCave(Cave, x, y, CAVE_FREQ_X, CAVE_FREQ_Y, CAVE_AMP, CAVE_OCTAVE);
+                    if (CaveNoise > CAVE_THRESHOLD) {
+                        Univ[y][x] = Air;
+                        continue;
+                    }
                 }
-                else {
-                    Univ[y][x] = Dirt;
-                }
+                Univ[y][x] = Dirt;
             }
         }
     }
 
-    // Post processing
-    for (int i = 0; i < 20; i++)
-    {
-        Automata(Univ);
-        RemoveOneBlockSpike(Univ);
-    }
-
-}
-
-void Automata(Block **Univ) {
-    Block **UnivBuffer = nullptr;
-
-    UnivBuffer = new Block*[UniverseHeight];
+    // Post processing — allocate buffer once and reuse across passes
+    Block** UnivBuffer = new Block*[UniverseHeight];
     for (int i = 0; i < UniverseHeight; i++) {
         UnivBuffer[i] = new Block[UniverseWidth];
     }
 
-    std::memcpy(UnivBuffer, Univ, sizeof(Univ));
-    int Dilation = 0;
-    int Errosion = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        Automata(Univ, UnivBuffer);
+        RemoveOneBlockSpike(Univ);
+    }
+
+    // Free the buffer
+    for (int i = 0; i < UniverseHeight; i++) {
+        delete[] UnivBuffer[i];
+    }
+    delete[] UnivBuffer;
+
+}
+
+void Automata(Block **Univ, Block **UnivBuffer) {
+    // Copy current state into buffer (proper row-by-row deep copy)
+    for (int i = 0; i < UniverseHeight; i++) {
+        std::memcpy(UnivBuffer[i], Univ[i], sizeof(Block) * UniverseWidth);
+    }
+
     Block ReplacementBlock = Dirt;
     for (int x = 2; x < UniverseWidth - 2; x++){
         for (int y = 2; y < UniverseHeight - 2; y++){
+            int Dilation = 0;   // Reset per cell
+            int Errosion = 0;   // Reset per cell
+
             if (UnivBuffer[y][x].B_ID == Air.B_ID) {
                 (UnivBuffer[(y - 1)][(x - 1)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
                 (UnivBuffer[(y - 1)][(x)].B_ID != Air.B_ID) ? Dilation++ : Dilation += 0;
@@ -230,19 +240,15 @@ void Automata(Block **Univ) {
                 (UnivBuffer[(y + 1)][(x - 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
                 (UnivBuffer[(y + 1)][(x)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
                 (UnivBuffer[(y + 1)][(x + 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
-
             }
-            if (Dilation >= 4) {
+            if (Dilation >= 6) {
                 Univ[y][x] = ReplacementBlock;
             }
-            if (Errosion >= 5) {
+            if (Errosion >= 6) {
                 Univ[y][x] = Air;
             }
-
         }
-
     }
-
 }
 
 void DrawVisibleWorld(Block **Univ, Camera2D camera) {

@@ -1,6 +1,9 @@
 #pragma once
 #include "Constant.h"
-#include <vector>
+
+struct Block;
+
+struct BlockPos;
 
 class Player {
 private:
@@ -16,6 +19,9 @@ private:
     int BelowBlock;
     float VelocityY;
     bool OnGround;
+    float Damage;
+    float HP;
+    bool WasMining;
 
 public:
     void Spawn();
@@ -34,9 +40,9 @@ public:
 
     bool PlayerCanFall();
 
-    bool BlockInRange(std::vector<int> Pos);
+    bool BlockInRange(BlockPos Pos);
 
-    bool BlockIsVisible(std::vector<int> Pos);
+    bool BlockIsVisible(BlockPos Pos);
 
     Player();
 
@@ -46,5 +52,9 @@ public:
 
     int gety();
 
+    void ChangeMiningStatus(bool status);
+    void Mine(Camera2D camera);
+
     friend void Move(Player& player, int velocity);
+    friend void Mine(BlockPos Pos, Block** Univ, Player player);
 };
