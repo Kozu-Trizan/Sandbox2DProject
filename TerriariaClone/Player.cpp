@@ -87,6 +87,31 @@ void Player::UpdateGravity() {
         }
         }
     }
+void Player::UpdateWalkAnimation()
+{
+    animationTimer += GetFrameTime();
+
+    if (animationTimer >= frameDuration)
+    {
+        animationTimer = 0.0f;
+
+        currentFrame++;
+
+        // There are 8 frames in one row
+        if (currentFrame >= 8)
+        {
+            currentFrame = 0;
+        }
+    }
+}
+void Player::SetAnimationRow(float row)
+{
+    this->animationRow = row;
+}
+void Player::SetJumpAnimationRow(float row)
+{
+    this->jumpAnimationRow = row;
+}
     
 int Player::getx()
 {
@@ -97,10 +122,94 @@ int Player::gety()
     return PosY;
 }
 
-void Player::DrawPlayer() {
-    this->player = { (float)this->PosX, (float)this->PosY, (float)this->WidthP, (float)this->HeightP };
-    DrawRectangleRec(player, RAYWHITE);
+/*void Player::DrawPlayer() {
+    this->player = { 
+           (float)this->PosX, 
+           (float)this->PosY, 
+           (float)this->WidthP, 
+           (float)this->HeightP 
+    };
+    //DrawRectangleRec(player, RAYWHITE);
+    DrawTexture(
+        this->walkTexture,
+        this->PosX,
+        this->PosY,
+        WHITE
+    );
+}*/
+void Player::DrawPlayer()
+{
+    this->player = {
+        (float)this->PosX,
+        (float)this->PosY,
+        (float)this->WidthP,
+        (float)this->HeightP
+    };
+
+    // One frame is 48 × 64 pixels
+    /*Rectangle source = {
+        0.0f,
+        0.0f,
+        48.0f,
+        64.0f
+    };*/
+
+    // Draw the selected frame at the player's position
+    /*Rectangle destination = {
+        (float)this->PosX,
+        (float)this->PosY,
+        48.0f,
+        64.0f
+    };*/
+    const int FRAME_WIDTH = 48;
+    const int FRAME_HEIGHT = 64;
+
+    float selectedRow;
+
+    if (this->IsInAir)
+    {
+        selectedRow = this->jumpAnimationRow;
+    }
+    else
+    {
+        selectedRow = this->animationRow;
+    }
+
+    Rectangle source = {
+        (float)(currentFrame * FRAME_WIDTH),
+        animationRow,
+        (float)FRAME_WIDTH,
+        (float)FRAME_HEIGHT
+    };
+
+    Rectangle destination = {
+        (float)this->PosX,
+        (float)this->PosY,
+        (float)FRAME_WIDTH,
+        (float)FRAME_HEIGHT
+    };
+    Texture2D currentTexture;
+    if (this->IsInAir)
+    {
+        currentTexture = this->jumpTexture;
+    }
+    else
+    {
+        currentTexture = this->walkTexture;
+    }
+
+
+    DrawTexturePro(
+        currentTexture,
+        source,
+        destination,
+        Vector2{ 0.0f, 0.0f },
+        0.0f,
+        WHITE
+    );
 }
+
+
 
 Rectangle& Player::GetPlayer() {
     return this->player;
