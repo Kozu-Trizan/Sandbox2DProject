@@ -3,7 +3,7 @@
 #include <raylib.h>
 
 const int UniverseWidth = 4200; // In terms of Blocks
-const int UniverseHeight = 1200;
+const int UniverseHeight = 900;
 
 const int ScreenWidth = 1024;
 const int ScreenHeight = 512;

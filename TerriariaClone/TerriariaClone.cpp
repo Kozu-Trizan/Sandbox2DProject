@@ -14,10 +14,11 @@
 Block** Universe = nullptr;
 
 int main() {  
+    Block* UniverseData = new Block[UniverseHeight * UniverseWidth]();
     Universe = new Block * [UniverseHeight];
     for (int i = 0; i < UniverseHeight; i++)
     {
-        Universe[i] = new Block[UniverseWidth];
+        Universe[i] = UniverseData + i * UniverseWidth;
     }
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
@@ -81,16 +82,7 @@ int main() {
          player.UpdateGravity();
 
         // Breaking Blocks
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
-            PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
-            std::vector<int> PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
-
-             if (Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID != Air.B_ID && player.BlockInRange(PosMouseMap) && player.BlockIsVisible(PosMouseMap)) {
-                 Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = Air.B_ID;
-             }
-
-         }
+         player.Mine(camera);
 
     //--------------------------------------------------------------------------------------------------------------------
 
@@ -115,9 +107,7 @@ int main() {
     }
     DeInitializeTexture();
     CloseWindow();
-    for (int i = 0; i < UniverseHeight; ++i) {
-        delete[] Universe[i];
-    }
+    delete[] Universe[0]; // frees the contiguous data block
     delete[] Universe;
     return 0;
     
