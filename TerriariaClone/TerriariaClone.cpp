@@ -71,7 +71,6 @@ int main() {
         }
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-        CouldMove(player,velocity);
         player.SetAnimationRow(320.0f);
         player.SetJumpAnimationRow(320.0f);
         player.UpdateWalkAnimation();
@@ -79,7 +78,6 @@ int main() {
         Move(player,velocity);
        }
         else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-        CouldMove(player,-velocity);
         player.SetAnimationRow(64.0f);
         player.SetJumpAnimationRow(64.0f);
         player.UpdateWalkAnimation();

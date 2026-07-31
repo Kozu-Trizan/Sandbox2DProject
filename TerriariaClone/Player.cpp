@@ -272,5 +272,16 @@ Player::Player() {
     this->Damage = 0.2f;
     this->HP = 100;
     this->WasMining = false;
+
+    this->animationRow = 0.0f;
+    this->jumpAnimationRow = 0.0f;
+    this->currentFrame = 0;
+    this->animationTimer = 0.0f;
+}
+
+Player::~Player() {
+    // Cleanup textures if they were loaded
+    if (this->walkTexture.id != 0) UnloadTexture(this->walkTexture);
+    if (this->jumpTexture.id != 0) UnloadTexture(this->jumpTexture);
 }
 
