@@ -1,6 +1,8 @@
 #pragma once
 #include "Constant.h"
 #include <vector>
+#include<raylib.h>
+
 
 class Player {
 private:
@@ -16,6 +18,13 @@ private:
     int BelowBlock;
     float VelocityY;
     bool OnGround;
+    float animationRow;
+    float jumpAnimationRow;
+    Texture2D walkTexture;
+    Texture2D jumpTexture;
+    int currentFrame;
+    float animationTimer;
+    float frameDuration;
 
 public:
     void UpdatePosX(int velocity);
@@ -25,6 +34,12 @@ public:
     void Jump(int JumpStep);
 
     void UpdateGravity();
+
+    void UpdateWalkAnimation();
+
+    void SetAnimationRow(float row);
+
+    void SetJumpAnimationRow(float row);
 
     void DrawPlayer();
 
@@ -39,6 +54,8 @@ public:
     Player();
 
     Player(int PosX, int PosY);
+
+    ~Player();
 
     int getx();
 
