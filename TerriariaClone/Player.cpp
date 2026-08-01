@@ -30,22 +30,43 @@ void Player::Mine(Camera2D camera) {
     Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
     PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
     BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
+    Block& MineBlock = Universe[PosMouseMap.y][PosMouseMap.x];
     if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) { 
 
-        if (Universe[PosMouseMap.y][PosMouseMap.x].B_ID != Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap)) {
-            //Universe[PosMouseMap[1]][PosMouseMap[0]].B_ID = Air.B_ID;
+        if (MineBlock.B_ID != Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap)) {
             this->WasMining = true;
-            if (Universe[PosMouseMap.y][PosMouseMap.x].HP > 0) {
-                Universe[PosMouseMap.y][PosMouseMap.x].HP -= this->Damage;
+            if (MineBlock.HP > 0) {
+                MineBlock.HP -= this->Damage;
             }
             else {
-                Universe[PosMouseMap.y][PosMouseMap.x].B_ID = Air.B_ID;
+                this->inventory.AddItem(MineBlock);
+                MineBlock = Air;
             }
         }
 
     }
-    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && this->WasMining == true) {
+    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && this->WasMining) {
         Universe[PosMouseMap.y][PosMouseMap.x].HP = Universe[PosMouseMap.y][PosMouseMap.x].BaseHP;
+        this->WasMining = false;
+    }
+}
+
+void Player::PlaceBlock(Camera2D camera) {
+    Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
+    PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
+    BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
+    Block& SelectedBlock = Universe[PosMouseMap.y][PosMouseMap.x];
+    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) && this->inventory.cell[this->HeldItemCellNo - 1].ItemCount > 0) {
+
+        if (SelectedBlock.B_ID == Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap)) {
+            SelectedBlock = dynamic_cast<Block&>(*this->inventory.cell[this->HeldItemCellNo - 1].item);
+            this->inventory.cell[this->HeldItemCellNo - 1].ItemCount -= 1;
+            if (this->inventory.cell[this->HeldItemCellNo - 1].ItemCount == 0) {
+                delete this->inventory.cell[this->HeldItemCellNo - 1].item;
+                this->inventory.cell[this->HeldItemCellNo - 1].item = nullptr;
+            }
+        }
+
     }
 }
 
@@ -253,6 +274,9 @@ Player::Player() {
     // Make sure the file (e.g., scarfy.png) is added to the project and copied to the output directory
     this->walkTexture = LoadTexture("assets/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Walk/walk.png");
     this->jumpTexture = LoadTexture("assets/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Jump - NEW/Normal/Jump.png");
+
+    this->inventory = Inventory(10);
+    this->HeldItemCellNo = 1;
 }
 
 

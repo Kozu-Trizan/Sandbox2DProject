@@ -1,6 +1,7 @@
 #pragma once
 #include "Constant.h"
 #include <vector>
+#include "Inventory.h"
 
 class Block;
 
@@ -31,7 +32,12 @@ private:
     float HP;
     bool WasMining;
 
+    Inventory inventory;
+    int HeldItemCellNo;
+
 public:
+    void PlaceBlock(Camera2D camera);
+
     void Spawn();
 
     void UpdatePosX(int velocity);
@@ -72,5 +78,4 @@ public:
     void Mine(Camera2D camera);
 
     friend void Move(Player& player, int velocity);
-    friend void Mine(BlockPos Pos, Block** Univ, Player player);
 };

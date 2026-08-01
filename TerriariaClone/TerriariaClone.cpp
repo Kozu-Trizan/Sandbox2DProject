@@ -94,6 +94,9 @@ int main() {
         // Breaking Blocks
          player.Mine(camera);
 
+         // Placing Blocks
+         player.PlaceBlock(camera);
+
     //--------------------------------------------------------------------------------------------------------------------
 
         BeginDrawing();
