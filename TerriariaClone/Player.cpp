@@ -122,21 +122,7 @@ int Player::gety()
     return PosY;
 }
 
-/*void Player::DrawPlayer() {
-    this->player = { 
-           (float)this->PosX, 
-           (float)this->PosY, 
-           (float)this->WidthP, 
-           (float)this->HeightP 
-    };
-    //DrawRectangleRec(player, RAYWHITE);
-    DrawTexture(
-        this->walkTexture,
-        this->PosX,
-        this->PosY,
-        WHITE
-    );
-}*/
+
 void Player::DrawPlayer()
 {
     this->player = {
@@ -146,21 +132,6 @@ void Player::DrawPlayer()
         (float)this->HeightP
     };
 
-    // One frame is 48 × 64 pixels
-    /*Rectangle source = {
-        0.0f,
-        0.0f,
-        48.0f,
-        64.0f
-    };*/
-
-    // Draw the selected frame at the player's position
-    /*Rectangle destination = {
-        (float)this->PosX,
-        (float)this->PosY,
-        48.0f,
-        64.0f
-    };*/
     const int FRAME_WIDTH = 48;
     const int FRAME_HEIGHT = 64;
 
@@ -202,7 +173,7 @@ void Player::DrawPlayer()
     DrawTexturePro(
         currentTexture,
         source,
-        destination,
+        this->player,
         Vector2{ 0.0f, 0.0f },
         0.0f,
         WHITE
@@ -280,8 +251,8 @@ Player::Player() {
     this->jumpAnimationRow = 64.0f;
     // Load texture from the 2D_character folder that you added to the project
     // Make sure the file (e.g., scarfy.png) is added to the project and copied to the output directory
-    this->walkTexture = LoadTexture("C:/terrarria/Sandbox2DProject/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Walk/walk.png");
-    this->jumpTexture = LoadTexture("C:/terrarria/Sandbox2DProject/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Jump - NEW/Normal/Jump.png");
+    this->walkTexture = LoadTexture("assets/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Walk/walk.png");
+    this->jumpTexture = LoadTexture("assets/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Jump - NEW/Normal/Jump.png");
 }
 
 
