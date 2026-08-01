@@ -1,5 +1,6 @@
 #pragma once
 #include "Constant.h"
+#include <vector>
 
 struct Block;
 
@@ -19,6 +20,13 @@ private:
     int BelowBlock;
     float VelocityY;
     bool OnGround;
+    float animationRow;
+    float jumpAnimationRow;
+    Texture2D walkTexture;
+    Texture2D jumpTexture;
+    int currentFrame;
+    float animationTimer;
+    float frameDuration;
     float Damage;
     float HP;
     bool WasMining;
@@ -34,6 +42,12 @@ public:
 
     void UpdateGravity();
 
+    void UpdateWalkAnimation();
+
+    void SetAnimationRow(float row);
+
+    void SetJumpAnimationRow(float row);
+
     void DrawPlayer();
 
     Rectangle& GetPlayer();
@@ -47,6 +61,8 @@ public:
     Player();
 
     Player(int PosX, int PosY);
+
+    ~Player();
 
     int getx();
 

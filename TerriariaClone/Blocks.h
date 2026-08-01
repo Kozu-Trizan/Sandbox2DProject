@@ -17,3 +17,4 @@ struct BlockPos {
 const inline Block Air;
 const inline Block Dirt = { 1, 5, 5 ,1 };
 const inline Block Grass = { 2, 2, 2, 1 };
+const inline Block Stone = {3, 8, 8, 1};
