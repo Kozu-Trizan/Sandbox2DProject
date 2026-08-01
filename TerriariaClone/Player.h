@@ -2,7 +2,7 @@
 #include "Constant.h"
 #include <vector>
 
-struct Block;
+class Block;
 
 struct BlockPos;
 
