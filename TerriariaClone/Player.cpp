@@ -60,6 +60,7 @@ void Player::PlaceBlock(Camera2D camera) {
 
         if (SelectedBlock.B_ID == Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap)) {
             SelectedBlock = dynamic_cast<Block&>(*this->inventory.cell[this->HeldItemCellNo - 1].item);
+            SelectedBlock.RestoreHealth(); // At mining block HP = 0 so to restore health;
             this->inventory.cell[this->HeldItemCellNo - 1].ItemCount -= 1;
             if (this->inventory.cell[this->HeldItemCellNo - 1].ItemCount == 0) {
                 delete this->inventory.cell[this->HeldItemCellNo - 1].item;

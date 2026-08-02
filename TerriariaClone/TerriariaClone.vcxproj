@@ -145,6 +145,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Blocks.cpp" />
     <ClCompile Include="BresenhamAlgorithm.cpp" />
     <ClCompile Include="GetTexture.cpp" />
     <ClCompile Include="Inventory.cpp" />

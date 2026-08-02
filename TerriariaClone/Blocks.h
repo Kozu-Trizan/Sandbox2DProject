@@ -18,6 +18,8 @@ public:
     ) : B_ID(bid), BaseHP(bhp), HP(hp), WallID(wid) {
         this->HP = this->BaseHP;
     }
+
+    void RestoreHealth();
 };
 
 struct BlockPos {
