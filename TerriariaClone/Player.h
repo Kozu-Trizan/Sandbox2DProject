@@ -9,7 +9,7 @@ struct BlockPos;
 
 class Player {
 private:
-    int PosX, PosY;
+    float PosX, PosY;
     int HeightP, WidthP;
     Color colorP;
     bool IsInAir;
@@ -36,7 +36,7 @@ private:
     int HeldItemCellNo;
 
 public:
-    void PlaceBlock(Camera2D camera);
+    std::vector<int> GetSize();
 
     void Spawn();
 
@@ -64,18 +64,22 @@ public:
 
     bool BlockIsVisible(BlockPos Pos);
 
+    bool PlayerOccupiesBlock(BlockPos Pos);
+
     Player();
 
     Player(int PosX, int PosY);
 
     ~Player();
 
-    int getx();
+    float getx();
 
-    int gety();
+    float gety();
 
     void ChangeMiningStatus(bool status);
-    void Mine(Camera2D camera);
+    void Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
+
+    void PlaceBlock(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
 
     friend void Move(Player& player, int velocity);
 };

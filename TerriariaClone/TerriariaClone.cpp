@@ -91,11 +91,17 @@ int main() {
         }
          player.UpdateGravity();
 
-        // Breaking Blocks
-         player.Mine(camera);
+         Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
+         PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
+         BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
+         Block& TargetBlock = Universe[PosMouseMap.y][PosMouseMap.x];
+        
+         // Breaking Blocks
+         player.Mine(camera, PosMouseMap, TargetBlock);
 
          // Placing Blocks
-         player.PlaceBlock(camera);
+         player.PlaceBlock(camera, PosMouseMap, TargetBlock);
+        
 
     //--------------------------------------------------------------------------------------------------------------------
 

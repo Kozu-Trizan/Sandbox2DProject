@@ -3,6 +3,10 @@
 #include "Player.h"
 #include "Inventory.h"
 
+struct BlockPos {
+    int x, y;
+};
+
 class Block : public Item {
 public:
     std::uint8_t B_ID = 0;
@@ -20,10 +24,8 @@ public:
     }
 
     void RestoreHealth();
-};
-
-struct BlockPos {
-    int x, y;
+    bool SurroundedByAir(BlockPos pos);
+    bool operator!=(Block another);
 };
 
 // 'inline' allows these to stay in the header file safely

@@ -7,9 +7,9 @@
 
 void Player::Spawn() {
     // Player Spawn Logic
-    int spawnX = UniverseWidth / 2;
-    int spawnY = 0;
-    while (spawnY < UniverseHeight && Universe[spawnY][spawnX].B_ID == 0) {
+    float spawnX = UniverseWidth / 2;
+    float spawnY = 0;
+    while (spawnY < UniverseHeight && Universe[(int)spawnY][(int)spawnX].B_ID == 0) {
         spawnY++;
     }
     spawnY--; // Prevent Spawnning on a block
@@ -26,14 +26,32 @@ void Player::UpdatePosY(int velocity) {
     this->PosY += velocity;
 }
 
-void Player::Mine(Camera2D camera) {
-    Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
-    PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
-    BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
-    Block& MineBlock = Universe[PosMouseMap.y][PosMouseMap.x];
+std::vector<int> Player::GetSize() {
+    return { this->WidthP, this->HeightP };
+}
+
+bool Player::PlayerOccupiesBlock(BlockPos Pos) {
+    // Check if the target block overlaps with player's pixel-based bounding box
+    // Player spans from PosX to PosX+WidthP, and PosY to PosY+HeightP
+    int blockLeftPx = Pos.x * BLOCK_SIZE;
+    int blockRightPx = blockLeftPx + BLOCK_SIZE;
+    int blockTopPx = Pos.y * BLOCK_SIZE;
+    int blockBottomPx = blockTopPx + BLOCK_SIZE;
+
+    int playerLeftPx = static_cast<int>(this->PosX);
+    int playerRightPx = playerLeftPx + this->WidthP;
+    int playerTopPx = static_cast<int>(this->PosY);
+    int playerBottomPx = playerTopPx + this->HeightP;
+
+    // Check for rectangle overlap
+    return !(blockRightPx <= playerLeftPx || blockLeftPx >= playerRightPx ||
+             blockBottomPx <= playerTopPx || blockTopPx >= playerBottomPx);
+}
+
+void Player::Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock) {
     if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) { 
 
-        if (MineBlock.B_ID != Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap)) {
+        if (MineBlock.B_ID != Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap) && !this->PlayerOccupiesBlock(PosMouseMap)) {
             this->WasMining = true;
             if (MineBlock.HP > 0) {
                 MineBlock.HP -= this->Damage;
@@ -51,14 +69,10 @@ void Player::Mine(Camera2D camera) {
     }
 }
 
-void Player::PlaceBlock(Camera2D camera) {
-    Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
-    PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
-    BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
-    Block& SelectedBlock = Universe[PosMouseMap.y][PosMouseMap.x];
-    if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) && this->inventory.cell[this->HeldItemCellNo - 1].ItemCount > 0) {
+void Player::PlaceBlock(Camera2D camera, BlockPos PosMouseMap, Block& SelectedBlock) {
+    if ((IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) && this->inventory.cell[this->HeldItemCellNo - 1].ItemCount > 0) {
 
-        if (SelectedBlock.B_ID == Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap)) {
+        if (SelectedBlock.B_ID == Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap) && !SelectedBlock.SurroundedByAir(PosMouseMap) && !this->PlayerOccupiesBlock(PosMouseMap)) {
             SelectedBlock = dynamic_cast<Block&>(*this->inventory.cell[this->HeldItemCellNo - 1].item);
             SelectedBlock.RestoreHealth(); // At mining block HP = 0 so to restore health;
             this->inventory.cell[this->HeldItemCellNo - 1].ItemCount -= 1;
@@ -73,7 +87,7 @@ void Player::PlaceBlock(Camera2D camera) {
 
 void Player::Jump(int JumpStep) {
     if (!this->IsInAir) {
-        AboveBlock = (this->PosY-1)/BLOCK_SIZE;
+        AboveBlock = static_cast<int>((this->PosY-1)/BLOCK_SIZE);
         if((IsSolid(this->LeftBlock,this->AboveBlock)|| IsSolid(this->RightBlock,this->AboveBlock))==false)
           { this->VelocityY = -static_cast<float>(JumpStep);      
             this->IsInAir = true;
@@ -82,8 +96,8 @@ void Player::Jump(int JumpStep) {
 }
 void Player::UpdateGravity() {
     this->VelocityY = this->VelocityY + 0.4f;
-    LeftBlock = this->PosX/BLOCK_SIZE;
-    RightBlock = (this->PosX+this->WidthP-1)/BLOCK_SIZE;
+    LeftBlock = static_cast<int>(this->PosX/BLOCK_SIZE);
+    RightBlock = static_cast<int>((this->PosX+this->WidthP-1)/BLOCK_SIZE);
     if(this->VelocityY < 0)
     {
         AboveBlock = static_cast<int>((this->PosY-1)/BLOCK_SIZE);
@@ -135,13 +149,13 @@ void Player::SetJumpAnimationRow(float row)
     this->jumpAnimationRow = row;
 }
     
-int Player::getx()
+float Player::getx()
 {
-    return PosX;
+    return this->PosX;
 }
-int Player::gety()
+float Player::gety()
 {
-    return PosY;
+    return this->PosY;
 }
 
 
@@ -213,9 +227,9 @@ bool Player::PlayerCanFall() {
    // (state) ? this->IsInAir = true : this->IsInAir = false;
     //return state;
     bool state;
-        LeftBlock = this->PosX/BLOCK_SIZE; // locates the left part of the block
-        RightBlock = (this->PosX + this->WidthP -1 )/BLOCK_SIZE;// locates the right part of the block
-        BelowBlock = (this->PosY + this->HeightP)/BLOCK_SIZE;//checks the block below the object
+        LeftBlock = static_cast<int>(this->PosX/BLOCK_SIZE); // locates the left part of the block
+        RightBlock = static_cast<int>((this->PosX + this->WidthP - 1)/BLOCK_SIZE);// locates the right part of the block
+        BelowBlock = static_cast<int>((this->PosY + this->HeightP)/BLOCK_SIZE);//checks the block below the object
         bool leftsolid = IsSolid(LeftBlock, BelowBlock);//checks if the block is solid from the left refrence
         bool rightsolid = IsSolid(RightBlock, BelowBlock);//checks if the block is solid from right refrence
         if ((leftsolid || rightsolid) == false)//checks if either side of the object is touching the block below
@@ -231,23 +245,28 @@ bool Player::PlayerCanFall() {
 }
 
 bool Player::BlockInRange(BlockPos Pos) {
-    bool InRangeHorizontal = std::abs(this->PosX / BLOCK_SIZE - Pos.x) <= this->MineRange;
-    int FromHead = (this->PosY / BLOCK_SIZE - Pos.y);
-    int FromFoot = (this->PosY / BLOCK_SIZE + (this->HeightP / BLOCK_SIZE - 1) - Pos.y); // Foot at player height - 1 block for head
+    bool InRangeHorizontal = std::abs(static_cast<int>(this->PosX / BLOCK_SIZE) - Pos.x) <= this->MineRange;
+    int FromHead = static_cast<int>(this->PosY / BLOCK_SIZE) - Pos.y;
+    int FromFoot = static_cast<int>(this->PosY / BLOCK_SIZE + (this->HeightP / BLOCK_SIZE - 1)) - Pos.y; // Foot at player height - 1 block for head
     bool InRangeVertical = std::abs(FromHead) <= this->MineRange || std::abs(FromFoot) <= this->MineRange;
     return (InRangeHorizontal && InRangeVertical);
 }
 
 bool Player::BlockIsVisible(BlockPos Pos) {
-    int playerBlockY = this->PosY / BLOCK_SIZE;
-    int playerBlockX = this->PosX / BLOCK_SIZE;
+    int playerBlockY = static_cast<int>(this->PosY / BLOCK_SIZE);
+    int playerBlockX = static_cast<int>(this->PosX / BLOCK_SIZE);
+    bool IsVisible = false;
+    for (int i = 0; i < static_cast<int>(this->HeightP / BLOCK_SIZE); i++) {
+        if (IsVisible) break;
+        IsVisible = IsVisible || CanReach(playerBlockX, playerBlockY + i, Pos.x, Pos.y);
+    }
     
-    return CanReach(playerBlockX, playerBlockY, Pos.x, Pos.y);
+    return IsVisible;
 }
 
 Player::Player() {
-    this->PosX = 0;
-    this->PosY = 0;
+    this->PosX = 0.0f;
+    this->PosY = 0.0f;
     this->HeightP = BLOCK_SIZE * 3;
     this->WidthP = BLOCK_SIZE;
     this->colorP = RAYWHITE;
