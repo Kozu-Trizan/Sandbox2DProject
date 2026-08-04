@@ -12,7 +12,6 @@
 #include "GetTexture.h"
 
 Block** Universe = nullptr;
-
 int main() {  
     Block* UniverseData = new Block[UniverseHeight * UniverseWidth]();
     Universe = new Block * [UniverseHeight];
@@ -28,7 +27,7 @@ int main() {
 
     Player player;
     int velocity = 2;
-    int JumpHeight = 10;
+    int JumpHeight = 6;
     player.UpdateWalkAnimation();
 
     player.Spawn();
@@ -71,6 +70,14 @@ int main() {
         }
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+          if ((IsKeyDown(KEY_RIGHT) && IsKeyDown(KEY_LEFT_SHIFT)) ||( IsKeyDown(KEY_D)&& IsKeyDown(KEY_LEFT_SHIFT)) )
+          {
+            player.SetAnimationRow(2*320.0f);
+            player.SetJumpAnimationRow(2*320.0f);
+            player.UpdateWalkAnimation();
+
+             Move(player,2*velocity);
+          }
         player.SetAnimationRow(320.0f);
         player.SetJumpAnimationRow(320.0f);
         player.UpdateWalkAnimation();
@@ -78,6 +85,15 @@ int main() {
         Move(player,velocity);
        }
         else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+           if ((IsKeyDown(KEY_LEFT) && IsKeyDown(KEY_LEFT_SHIFT)) ||( IsKeyDown(KEY_A)&& IsKeyDown(KEY_LEFT_SHIFT)) )
+          {
+            player.SetAnimationRow(2*320.0f);
+            player.SetJumpAnimationRow(2*320.0f);
+            player.UpdateWalkAnimation();
+
+             Move(player,-2*velocity);
+          }
+
         player.SetAnimationRow(64.0f);
         player.SetJumpAnimationRow(64.0f);
         player.UpdateWalkAnimation();
@@ -90,7 +106,6 @@ int main() {
             player.Jump(JumpHeight);
         }
          player.UpdateGravity();
-
         // Breaking Blocks
          player.Mine(camera);
 

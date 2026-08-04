@@ -59,8 +59,7 @@ void Player::Jump(int JumpStep) {
     }
 }
 void Player::UpdateGravity() {
-    this->VelocityY = this->VelocityY + 0.4f;
-    LeftBlock = this->PosX/BLOCK_SIZE;
+    this->VelocityY = this->VelocityY + 0.1f;
     RightBlock = (this->PosX+this->WidthP-1)/BLOCK_SIZE;
     if(this->VelocityY < 0)
     {
