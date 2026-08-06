@@ -5,6 +5,10 @@
 #include "IsSolid.h"
 #include "BresenhamAlgorithm.h"
 
+void Player::ChangeHeldItem(int CellNo) {
+    this->HeldItemCellNo = CellNo;
+}
+
 void Player::Spawn() {
     // Player Spawn Logic
     float spawnX = UniverseWidth / 2;
@@ -18,11 +22,11 @@ void Player::Spawn() {
     this->PosY = spawnY * BLOCK_SIZE - this->HeightP;
 }
 
-void Player::UpdatePosX(int velocity) {
+void Player::UpdatePosX(float velocity) {
     this->PosX += velocity;
 }
 
-void Player::UpdatePosY(int velocity) {
+void Player::UpdatePosY(float velocity) {
     this->PosY += velocity;
 }
 
@@ -31,24 +35,27 @@ std::vector<int> Player::GetSize() {
 }
 
 bool Player::PlayerOccupiesBlock(BlockPos Pos) {
-    // Check if the target block overlaps with player's pixel-based bounding box
-    // Player spans from PosX to PosX+WidthP, and PosY to PosY+HeightP
-    int blockLeftPx = Pos.x * BLOCK_SIZE;
-    int blockRightPx = blockLeftPx + BLOCK_SIZE;
-    int blockTopPx = Pos.y * BLOCK_SIZE;
-    int blockBottomPx = blockTopPx + BLOCK_SIZE;
+    // Use floorf to avoid float truncation causing sub-foot block to appear occupied
+    float playerTop    = this->PosY;
+    float playerBottom = this->PosY + this->HeightP;
+    float playerLeft   = this->PosX;
+    float playerRight  = this->PosX + this->WidthP;
 
-    int playerLeftPx = static_cast<int>(this->PosX);
-    int playerRightPx = playerLeftPx + this->WidthP;
-    int playerTopPx = static_cast<int>(this->PosY);
-    int playerBottomPx = playerTopPx + this->HeightP;
+    float blockLeft   = Pos.x * BLOCK_SIZE;
+    float blockRight  = blockLeft + BLOCK_SIZE;
+    float blockTop    = Pos.y * BLOCK_SIZE;
+    float blockBottom = blockTop + BLOCK_SIZE;
 
-    // Check for rectangle overlap
-    return !(blockRightPx <= playerLeftPx || blockLeftPx >= playerRightPx ||
-             blockBottomPx <= playerTopPx || blockTopPx >= playerBottomPx);
+    // Strict overlap: both intervals must overlap by more than a small epsilon
+    const float eps = 0.5f;
+    return (playerRight  - eps > blockLeft  &&
+            playerLeft   + eps < blockRight &&
+            playerBottom - eps > blockTop   &&
+            playerTop    + eps < blockBottom);
 }
 
 void Player::Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock) {
+    std::uint8_t WallID;
     if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) { 
 
         if (MineBlock.B_ID != Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap) && !this->PlayerOccupiesBlock(PosMouseMap)) {
@@ -58,7 +65,9 @@ void Player::Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock) {
             }
             else {
                 this->inventory.AddItem(MineBlock);
+                WallID = MineBlock.WallID;
                 MineBlock = Air;
+                MineBlock.WallID = WallID;
             }
         }
 
@@ -70,11 +79,13 @@ void Player::Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock) {
 }
 
 void Player::PlaceBlock(Camera2D camera, BlockPos PosMouseMap, Block& SelectedBlock) {
+    std::uint8_t WallID = SelectedBlock.WallID;
     if ((IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) && this->inventory.cell[this->HeldItemCellNo - 1].ItemCount > 0) {
 
         if (SelectedBlock.B_ID == Air.B_ID && this->BlockInRange(PosMouseMap) && this->BlockIsVisible(PosMouseMap) && !SelectedBlock.SurroundedByAir(PosMouseMap) && !this->PlayerOccupiesBlock(PosMouseMap)) {
             SelectedBlock = dynamic_cast<Block&>(*this->inventory.cell[this->HeldItemCellNo - 1].item);
             SelectedBlock.RestoreHealth(); // At mining block HP = 0 so to restore health;
+            SelectedBlock.WallID = WallID;
             this->inventory.cell[this->HeldItemCellNo - 1].ItemCount -= 1;
             if (this->inventory.cell[this->HeldItemCellNo - 1].ItemCount == 0) {
                 delete this->inventory.cell[this->HeldItemCellNo - 1].item;
@@ -98,21 +109,34 @@ void Player::UpdateGravity() {
     this->VelocityY = this->VelocityY + 0.4f;
     LeftBlock = static_cast<int>(this->PosX/BLOCK_SIZE);
     RightBlock = static_cast<int>((this->PosX+this->WidthP-1)/BLOCK_SIZE);
-    if(this->VelocityY < 0)
+
+    if(this->VelocityY < 0) // Moving UP (jumping)
     {
-        AboveBlock = static_cast<int>((this->PosY-1)/BLOCK_SIZE);
-        if((IsSolid(this->LeftBlock,this->AboveBlock)|| IsSolid(this->RightBlock,this->AboveBlock))==false)
+        float futureTop = this->PosY + this->VelocityY;
+        AboveBlock = static_cast<int>(futureTop / BLOCK_SIZE);
+        // Check if hitting ceiling - test both left and right edges
+        bool leftClear = !IsSolid(this->LeftBlock, this->AboveBlock);
+        bool rightClear = !IsSolid(this->RightBlock, this->AboveBlock);
+
+        if(leftClear && rightClear)
         {
             UpdatePosY(this->VelocityY);
         }
         else{
             VelocityY = 0;
+            // Snap head to bottom of the ceiling block to eliminate float overshoot
+            this->PosY = static_cast<float>((this->AboveBlock + 1) * BLOCK_SIZE);
         }
     }
-    else 
+    else // Moving DOWN (falling)
     {
-        BelowBlock = static_cast<int>((this->PosY + this->HeightP)/BLOCK_SIZE);
-        if((IsSolid(this->LeftBlock,this->BelowBlock)|| IsSolid(this->RightBlock,this->BelowBlock))==false)
+        float futureBottom = this->PosY + this->HeightP + this->VelocityY;
+        BelowBlock = static_cast<int>(futureBottom / BLOCK_SIZE);
+        // Check if hitting ground - test both left and right edges
+        bool leftClear = !IsSolid(this->LeftBlock, this->BelowBlock);
+        bool rightClear = !IsSolid(this->RightBlock, this->BelowBlock);
+
+        if(leftClear && rightClear)
         {
             UpdatePosY(this->VelocityY);
             IsInAir = true;
@@ -120,9 +144,11 @@ void Player::UpdateGravity() {
         else{
             VelocityY = 0;
             this->IsInAir = false;
-        }
+            // Snap feet to top of the ground block to eliminate float overshoot
+            this->PosY = static_cast<float>(this->BelowBlock * BLOCK_SIZE - this->HeightP);
         }
     }
+}
 void Player::UpdateWalkAnimation()
 {
     animationTimer += GetFrameTime();

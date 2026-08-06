@@ -40,9 +40,9 @@ public:
 
     void Spawn();
 
-    void UpdatePosX(int velocity);
+    void UpdatePosX(float velocity);
 
-    void UpdatePosY(int velocity);
+    void UpdatePosY(float velocity);
 
     void Jump(int JumpStep);
 
@@ -80,6 +80,8 @@ public:
     void Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
 
     void PlaceBlock(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
+
+    void ChangeHeldItem(int CellNo);
 
     friend void Move(Player& player, int velocity);
 };

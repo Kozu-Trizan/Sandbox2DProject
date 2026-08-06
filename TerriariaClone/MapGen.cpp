@@ -181,6 +181,7 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
                     float CaveNoise = NoiseForCave(Cave, x, y, CAVE_FREQ_X, CAVE_FREQ_Y, CAVE_AMP, CAVE_OCTAVE);
                     if (CaveNoise > CAVE_THRESHOLD) {
                         Univ[y][x] = Air;
+                        Univ[y][x].WallID = Dirt.WallID;
                         continue;
                     }
                 }
@@ -263,6 +264,9 @@ void DrawVisibleWorld(Block **Univ, Camera2D camera) {
             if (x < 0 || x >= UniverseWidth) continue;
 
             if (Univ[y][x].B_ID == 0) {
+                if (Univ[y][x].WallID != 0) {
+                    DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, { 84, 69, 49, 255 });
+                }
                 continue;
             }
             else if (Univ[y][x].B_ID == 1) {

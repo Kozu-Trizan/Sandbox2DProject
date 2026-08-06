@@ -1,5 +1,4 @@
 #include "Inventory.h"
-
 #include "Blocks.h"
 
 Inventory::Inventory() {
@@ -37,7 +36,6 @@ void Inventory::AddItem(Item& item) {
 			return;
 		}
 	}
-
 }
 
 int Inventory::GetItemCount(int CellID) {
