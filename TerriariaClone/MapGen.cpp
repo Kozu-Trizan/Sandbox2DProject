@@ -2,6 +2,7 @@
 #include <random>
 #include <numeric>
 #include <cstring>
+#include<algorithm>
 #include "Constant.h"
 #include "Blocks.h"
 #include "MapGen.h"

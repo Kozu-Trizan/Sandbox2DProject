@@ -59,14 +59,17 @@ void Player::Jump(int JumpStep) {
     }
 }
 void Player::UpdateGravity() {
-    this->VelocityY = this->VelocityY + 0.4f;
-    LeftBlock = this->PosX/BLOCK_SIZE;
+    this->VelocityY = this->VelocityY + 0.1f;
     RightBlock = (this->PosX+this->WidthP-1)/BLOCK_SIZE;
     if(this->VelocityY < 0)
     {
         AboveBlock = static_cast<int>((this->PosY-1)/BLOCK_SIZE);
         if((IsSolid(this->LeftBlock,this->AboveBlock)|| IsSolid(this->RightBlock,this->AboveBlock))==false)
         {
+          if(IsInAir==0)
+          {
+            this->FallHeight=this->PosY;
+          }
             UpdatePosY(this->VelocityY);
         }
         else{
@@ -82,11 +85,29 @@ void Player::UpdateGravity() {
             IsInAir = true;
         }
         else{
+          if(IsInAir==1)
+          {
+            this->FallDistance = this->PosY - this->FallHeight;
+            this->BlocksFallen = this->FallDistance/BLOCK_SIZE;
+            if(this->BlocksFallen>10)
+            {
+              this->HP = this->HP - (this->BlocksFallen - 10)*10;
+            }
+          }
             VelocityY = 0;
             this->IsInAir = false;
+            if(this->HP<=0)
+            {
+              this->IsDead = true; 
+            }
         }
         }
     }
+void Player::SetHP(int hp)
+{
+  this->HP = hp;
+}
+
 void Player::UpdateWalkAnimation()
 {
     animationTimer += GetFrameTime();

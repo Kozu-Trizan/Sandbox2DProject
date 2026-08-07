@@ -28,11 +28,18 @@ private:
     float animationTimer;
     float frameDuration;
     float Damage;
-    float HP;
+    float HP = 10;
     bool WasMining;
-
+    int FallHeight;
+    float FallDistance;
+    float BlocksFallen;
+    
 public:
+    bool IsDead = false;
+
     void Spawn();
+
+    void SetHP(int hp);
 
     void UpdatePosX(int velocity);
 
@@ -57,6 +64,7 @@ public:
     bool BlockInRange(BlockPos Pos);
 
     bool BlockIsVisible(BlockPos Pos);
+
 
     Player();
 
