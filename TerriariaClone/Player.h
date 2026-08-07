@@ -28,8 +28,7 @@ private:
     float animationTimer;
     float frameDuration;
     float Damage;
-    float HP = 100.0f;
-    float MaxHP = 100.0f; 
+    float HP = 100;
     bool WasMining;
     int FallHeight;
     float FallDistance;
@@ -37,6 +36,8 @@ private:
     
 public:
     bool IsDead = false;
+
+    float SoundVolume = 1.0f;
 
     void Spawn();
 
