@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "IsSolid.h"
 #include "BresenhamAlgorithm.h"
+#include "WavefrontPropagation.h"
 
 void Player::ChangeHeldItem(int CellNo) {
     this->HeldItemCellNo = CellNo;
@@ -68,6 +69,7 @@ void Player::Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock) {
                 WallID = MineBlock.WallID;
                 MineBlock = Air;
                 MineBlock.WallID = WallID;
+                UpdateLocalLight(PosMouseMap);
             }
         }
 
@@ -91,6 +93,7 @@ void Player::PlaceBlock(Camera2D camera, BlockPos PosMouseMap, Block& SelectedBl
                 delete this->inventory.cell[this->HeldItemCellNo - 1].item;
                 this->inventory.cell[this->HeldItemCellNo - 1].item = nullptr;
             }
+            UpdateLocalLight(PosMouseMap);
         }
 
     }

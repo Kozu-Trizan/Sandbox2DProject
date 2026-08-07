@@ -10,6 +10,7 @@
 #include "IsSolid.h"
 #include "Move.h"
 #include "GetTexture.h"
+#include "LightMap.h"
 
 Block** Universe = nullptr;
 
@@ -23,6 +24,7 @@ int main() {
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
     SetTargetFPS(60);
     InitializeTexture();
+    InitLightMap();
 
     GenerateVisibleWorld(Universe, MAP_FREQ, MAP_AMP, MAP_BASE_LEVEL, MAP_OCTAVE);
 
@@ -47,6 +49,7 @@ int main() {
 
     while (!WindowShouldClose()) {
         // Update
+    //--------------------------------------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------------------------------------
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
@@ -94,7 +97,10 @@ int main() {
          PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
          BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
          Block& TargetBlock = Universe[PosMouseMap.y][PosMouseMap.x];
-         Rectangle Outline(static_cast<int>(PosMouse.x / BLOCK_SIZE) * BLOCK_SIZE, static_cast<int>(PosMouse.y / BLOCK_SIZE) * BLOCK_SIZE, BLOCK_SIZE ,BLOCK_SIZE);
+         Rectangle Outline = { 0 };
+         if (TargetBlock.GetLightDecay() > 0) {
+             Outline = { static_cast<float>(static_cast<int>(PosMouse.x / BLOCK_SIZE) * BLOCK_SIZE), static_cast<float>(static_cast<int>(PosMouse.y / BLOCK_SIZE) * BLOCK_SIZE), (float)BLOCK_SIZE, (float)BLOCK_SIZE };
+         }
         
          // Breaking Blocks
          player.Mine(camera, PosMouseMap, TargetBlock);
@@ -132,6 +138,7 @@ int main() {
         DrawVisibleWorld(Universe, camera);
 
         player.DrawPlayer();
+        DrawLightMap(Universe, camera);
         if (TargetBlock.B_ID != Air.B_ID) {
             DrawRectangleLinesEx(Outline, 0.4f, LIGHTGRAY);
         }
@@ -142,6 +149,7 @@ int main() {
         EndDrawing();
     // ---------------------------------------------------------------------------------------------------------------------------
     }
+    DeInitLightMap();
     DeInitializeTexture();
     CloseWindow();
     delete[] Universe[0]; // frees the contiguous data block

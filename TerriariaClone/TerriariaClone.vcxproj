@@ -154,6 +154,8 @@
     <ClCompile Include="MapGen.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="TerriariaClone.cpp" />
+    <ClCompile Include="LightMap.cpp" />
+    <ClCompile Include="WavefrontPropagation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blocks.h" />
@@ -164,6 +166,8 @@
     <ClInclude Include="Move.h" />
     <ClInclude Include="MapGen.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="LightMap.h" />
+    <ClInclude Include="WavefrontPropagation.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="RaylibPath.props" />

@@ -5,6 +5,7 @@
 #include "Constant.h"
 #include "Blocks.h"
 #include "MapGen.h"
+#include "WavefrontPropagation.h"
 
 // Perlin1D class
 
@@ -114,24 +115,48 @@ float NoiseForCave(Perlin2D& Cave, int PosX, int PosY, float CaveFreqX, float Ca
     return Noise;
 }
 
-void RemoveOneBlockSpike(Block **Univ) {
+void RemoveOneBlockSpike(Block **Univ, Block **UnivBuffer) {
+    // Copy current state into buffer
+    for (int i = 0; i < UniverseHeight; i++) {
+        std::memcpy(UnivBuffer[i], Univ[i], sizeof(Block) * UniverseWidth);
+    }
+
     // Check except boundaries to prevent array index out of range
     for (int x = 1; x < UniverseWidth - 1; x++){
         for (int y = 1; y < UniverseHeight - 1; y++) {
-            if (Univ[y][x].B_ID == Air.B_ID) continue;
+            if (UnivBuffer[y][x].B_ID == Air.B_ID) continue;
+            
+            bool spikeRemoved = false;
             if (
-                Univ[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
-                Univ[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
-                Univ[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
+                UnivBuffer[y][x + 1].B_ID == Air.B_ID && // Is Right Neighbour Air
+                UnivBuffer[y][x - 1].B_ID == Air.B_ID && // Is Left Neighbour Air
+                UnivBuffer[y - 1][x].B_ID == Air.B_ID // Is Top Neighbour Air
                 ) {
+                std::uint8_t InheritedWallID = 0;
+                // Inherit WallID from neighbors to prevent holes in caves
+                const int nx[4] = { x-1, x+1, x, x };
+                const int ny[4] = { y, y, y-1, y+1 };
+                for (int n = 0; n < 4; n++) {
+                    if (UnivBuffer[ny[n]][nx[n]].B_ID == Air.B_ID && UnivBuffer[ny[n]][nx[n]].WallID != 0) {
+                        InheritedWallID = UnivBuffer[ny[n]][nx[n]].WallID;
+                        break;
+                    }
+                }
                 Univ[y][x] = Air;
+                Univ[y][x].WallID = InheritedWallID;
+                spikeRemoved = true;
             }
 
             // Make blocks continuous
-            if (
-                Univ[y][x + 1].B_ID == Univ[y][x - 1].B_ID && 
-                Univ[y][x].B_ID != Univ[y][x + 1].B_ID
-                ) Univ[y][x].B_ID = Univ[y][x + 1].B_ID;
+            if (!spikeRemoved) {
+                if (
+                    UnivBuffer[y][x + 1].B_ID == UnivBuffer[y][x - 1].B_ID && 
+                    UnivBuffer[y][x].B_ID != UnivBuffer[y][x + 1].B_ID
+                    ) {
+                    // Copy the entire block to preserve its base stats and WallID if applicable
+                    Univ[y][x] = UnivBuffer[y][x + 1];
+                }
+            }
         }
     }
 }
@@ -182,6 +207,7 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
                     if (CaveNoise > CAVE_THRESHOLD) {
                         Univ[y][x] = Air;
                         Univ[y][x].WallID = Dirt.WallID;
+                        Univ[y][x].SetLightValue(0);
                         continue;
                     }
                 }
@@ -199,7 +225,7 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
     for (int i = 0; i < 3; i++)
     {
         Automata(Univ, UnivBuffer);
-        RemoveOneBlockSpike(Univ);
+        RemoveOneBlockSpike(Univ, UnivBuffer);
     }
 
     // Free the buffer
@@ -208,6 +234,8 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
     }
     delete[] UnivBuffer;
 
+    QueueLightSources(0, 0, UniverseWidth, UniverseHeight);
+    BreadthFirstSearch(0, 0, 0, 0, UniverseWidth, UniverseHeight);
 }
 
 void Automata(Block **Univ, Block **UnivBuffer) {
@@ -246,7 +274,18 @@ void Automata(Block **Univ, Block **UnivBuffer) {
                 Univ[y][x] = ReplacementBlock;
             }
             if (Errosion >= 6) {
+                std::uint8_t InheritedWallID = 0;
+                const int nx[8] = { x-1, x+1, x, x, x-1, x+1, x-1, x+1 };
+                const int ny[8] = { y, y, y-1, y+1, y-1, y-1, y+1, y+1 };
+                for (int n = 0; n < 8; n++) {
+                    if (UnivBuffer[ny[n]][nx[n]].B_ID == Air.B_ID &&
+                        UnivBuffer[ny[n]][nx[n]].WallID != 0) {
+                        InheritedWallID = UnivBuffer[ny[n]][nx[n]].WallID;
+                        break;
+                    }
+                }
                 Univ[y][x] = Air;
+                Univ[y][x].WallID = InheritedWallID;
             }
         }
     }
@@ -255,25 +294,22 @@ void Automata(Block **Univ, Block **UnivBuffer) {
 void DrawVisibleWorld(Block **Univ, Camera2D camera) {
     Vector2 TopLeftBound = GetScreenToWorld2D(Vector2{ 0, 0 }, camera);
     Vector2 BottomRightBound = GetScreenToWorld2D({ (float)ScreenWidth, (float)ScreenHeight }, camera);
-    float VisibleWorldHeight = BottomRightBound.y - TopLeftBound.y;
-    float VisibleWorldWidth = BottomRightBound.x - TopLeftBound.x;
 
     for (int y = static_cast<int>((TopLeftBound.y / BLOCK_SIZE)); y < static_cast<int>(BottomRightBound.y / BLOCK_SIZE) + 1; y++) { // + 1 in order to avoid clipping at the right and bottom boundaries.
         if (y < 0 || y >= UniverseHeight) continue;
         for (int x = static_cast<int>(TopLeftBound.x / BLOCK_SIZE); x < static_cast<int>(BottomRightBound.x / BLOCK_SIZE) + 1; x++) {
             if (x < 0 || x >= UniverseWidth) continue;
-
             if (Univ[y][x].B_ID == 0) {
                 if (Univ[y][x].WallID != 0) {
-                    DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, { 84, 69, 49, 255 });
+                    DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, { 84, 69, 49, 255 }); // Walls
                 }
                 continue;
             }
             else if (Univ[y][x].B_ID == 1) {
-                DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, BROWN);
+                DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, Color{ 127, 106, 79, 255 });
             }
             else if (Univ[y][x].B_ID == 2) {
-                DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, GREEN);
+                DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, Color{ 0, 228, 48, 255 });
             }
         }
     }
