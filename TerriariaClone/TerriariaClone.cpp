@@ -64,7 +64,7 @@ int main() {
             camera.zoom = PrevZoom;
         }
         
-
+            
         if (player.PlayerCanFall()) {
             player.UpdatePosY(velocity);
         }
@@ -93,17 +93,29 @@ int main() {
 
              Move(player,-2*velocity);
           }
-
         player.SetAnimationRow(64.0f);
         player.SetJumpAnimationRow(64.0f);
         player.UpdateWalkAnimation();
-
-
         Move(player,-velocity);
         }
 
+        if (IsKeyDown(KEY_K))
+        {
+          player.IsDead = true;
+        }
         if (IsKeyPressed(KEY_SPACE)) {
             player.Jump(JumpHeight);
+        }
+        if(player.IsDead)
+        {
+          GenerateVisibleWorld(Universe,
+                         MAP_FREQ,
+                         MAP_AMP,
+                         MAP_BASE_LEVEL,
+                         MAP_OCTAVE);
+          player.IsDead = false;
+          player.SetHP(10);
+          player.Spawn();
         }
          player.UpdateGravity();
         // Breaking Blocks

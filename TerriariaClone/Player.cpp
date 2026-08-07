@@ -91,14 +91,23 @@ void Player::UpdateGravity() {
             this->BlocksFallen = this->FallDistance/BLOCK_SIZE;
             if(this->BlocksFallen>10)
             {
-              this->HP = this->HP - (this->BlocksFallen - 10)*2;
+              this->HP = this->HP - (this->BlocksFallen - 10)*10;
             }
           }
             VelocityY = 0;
             this->IsInAir = false;
+            if(this->HP<=0)
+            {
+              this->IsDead = true; 
+            }
         }
         }
     }
+void Player::SetHP(int hp)
+{
+  this->HP = hp;
+}
+
 void Player::UpdateWalkAnimation()
 {
     animationTimer += GetFrameTime();
