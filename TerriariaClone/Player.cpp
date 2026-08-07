@@ -16,6 +16,11 @@ void Player::Spawn() {
 
     this->PosX = spawnX * BLOCK_SIZE;
     this->PosY = spawnY * BLOCK_SIZE - this->HeightP;
+    this->VelocityY = 0;
+    this->IsInAir = false;
+    this->FallHeight = this->PosY;
+    this->FallDistance = 0;
+    this->BlocksFallen = 0;
 }
 
 void Player::UpdatePosX(int velocity) {

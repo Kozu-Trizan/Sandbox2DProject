@@ -20,6 +20,7 @@ int main() {
         Universe[i] = UniverseData + i * UniverseWidth;
     }
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
+    InitAudioDevice();
     SetTargetFPS(60);
     InitializeTexture();
 
@@ -32,7 +33,7 @@ int main() {
 
     player.Spawn();
     player.DrawPlayer();
-
+    Music bgMusic = LoadMusicStream("assets/music/JNKm6waftWQ-f287bdc79a08e3dbfa6be51ce676564e649.mp3");
     //Camera Configurations
     Camera2D camera = { 0 };
 
@@ -43,8 +44,9 @@ int main() {
 
     float MaxZoom = 3.0f;
     float MinZoom = 0.1f;
-
+    PlayMusicStream(bgMusic);
     while (!WindowShouldClose()) {
+        UpdateMusicStream(bgMusic);
         // Update
     //--------------------------------------------------------------------------------------------------------------------
         camera.target = { player.GetPlayer().x + BLOCK_SIZE / 2, player.GetPlayer().y + BLOCK_SIZE / 2 };
@@ -103,10 +105,18 @@ int main() {
         {
           player.IsDead = true;
         }
+        if (IsKeyPressed(KEY_UP)) {
+            player.SoundVolume=player.SoundVolume+0.5f;
+            SetMusicVolume(bgMusic,player.SoundVolume);
+        }
+        if (IsKeyPressed(KEY_DOWN)) {
+            player.SoundVolume=player.SoundVolume-0.5f;
+            SetMusicVolume(bgMusic,player.SoundVolume);
+        }
         if (IsKeyPressed(KEY_SPACE)) {
             player.Jump(JumpHeight);
         }
-        if(player.IsDead)
+        if(player.IsDead == true)
         {
           GenerateVisibleWorld(Universe,
                          MAP_FREQ,
@@ -114,7 +124,7 @@ int main() {
                          MAP_BASE_LEVEL,
                          MAP_OCTAVE);
           player.IsDead = false;
-          player.SetHP(10);
+          player.SetHP(100);
           player.Spawn();
         }
          player.UpdateGravity();
@@ -142,6 +152,8 @@ int main() {
         EndDrawing();
     // ---------------------------------------------------------------------------------------------------------------------------
     }
+    UnloadMusicStream(bgMusic);
+    CloseAudioDevice(); 
     DeInitializeTexture();
     CloseWindow();
     delete[] Universe[0]; // frees the contiguous data block
