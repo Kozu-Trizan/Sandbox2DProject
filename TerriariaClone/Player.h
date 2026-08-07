@@ -30,7 +30,6 @@ private:
     float Damage;
     float HP = 100.0f;
     float MaxHP = 100.0f; 
-    float Damage;
     bool WasMining;
     int FallHeight;
     float FallDistance;

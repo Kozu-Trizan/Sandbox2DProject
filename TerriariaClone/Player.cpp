@@ -148,23 +148,8 @@ void Player::UpdateWalkAnimation()
             currentFrame = 0;
         }
     }
-void Player::UpdateWalkAnimation()
-{
-    animationTimer += GetFrameTime();
-
-    if (animationTimer >= frameDuration)
-    {
-        animationTimer = 0.0f;
-
-        currentFrame++;
-
-        // There are 8 frames in one row
-        if (currentFrame >= 8)
-        {
-            currentFrame = 0;
-        }
-    }
 }
+
 void Player::SetAnimationRow(float row)
 {
     this->animationRow = row;
