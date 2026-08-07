@@ -13,8 +13,7 @@
 #include "ui.h"
 
 Block** Universe = nullptr;
-
-int main() {
+int main() {  
     Block* UniverseData = new Block[UniverseHeight * UniverseWidth]();
     Universe = new Block * [UniverseHeight];
     for (int i = 0; i < UniverseHeight; i++)
@@ -29,7 +28,7 @@ int main() {
 
     Player player;
     int velocity = 2;
-    int JumpHeight = 10;
+    int JumpHeight = 6;
     player.UpdateWalkAnimation();
 
     player.Spawn();
@@ -65,33 +64,61 @@ int main() {
         if (WorldBoundaryReached(camera)) {
             camera.zoom = PrevZoom;
         }
-
-
+        
+            
         if (player.PlayerCanFall()) {
             player.UpdatePosY(velocity);
         }
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-            player.SetAnimationRow(320.0f);
-            player.SetJumpAnimationRow(320.0f);
+          if ((IsKeyDown(KEY_RIGHT) && IsKeyDown(KEY_LEFT_SHIFT)) ||( IsKeyDown(KEY_D)&& IsKeyDown(KEY_LEFT_SHIFT)) )
+          {
+            player.SetAnimationRow(2*320.0f);
+            player.SetJumpAnimationRow(2*320.0f);
             player.UpdateWalkAnimation();
 
-            Move(player, velocity);
-        }
+             Move(player,2*velocity);
+          }
+        player.SetAnimationRow(320.0f);
+        player.SetJumpAnimationRow(320.0f);
+        player.UpdateWalkAnimation();
+
+        Move(player,velocity);
+       }
         else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-            player.SetAnimationRow(64.0f);
-            player.SetJumpAnimationRow(64.0f);
+           if ((IsKeyDown(KEY_LEFT) && IsKeyDown(KEY_LEFT_SHIFT)) ||( IsKeyDown(KEY_A)&& IsKeyDown(KEY_LEFT_SHIFT)) )
+          {
+            player.SetAnimationRow(2*320.0f);
+            player.SetJumpAnimationRow(2*320.0f);
             player.UpdateWalkAnimation();
 
-
-            Move(player, -velocity);
+             Move(player,-2*velocity);
+          }
+        player.SetAnimationRow(64.0f);
+        player.SetJumpAnimationRow(64.0f);
+        player.UpdateWalkAnimation();
+        Move(player,-velocity);
         }
 
+        if (IsKeyDown(KEY_K))
+        {
+          player.IsDead = true;
+        }
         if (IsKeyPressed(KEY_SPACE)) {
             player.Jump(JumpHeight);
         }
-        player.UpdateGravity();
-
+        if(player.IsDead)
+        {
+          GenerateVisibleWorld(Universe,
+                         MAP_FREQ,
+                         MAP_AMP,
+                         MAP_BASE_LEVEL,
+                         MAP_OCTAVE);
+          player.IsDead = false;
+          player.SetHP(10);
+          player.Spawn();
+        }
+         player.UpdateGravity();
         // Breaking Blocks
         player.Mine(camera);
 

@@ -27,15 +27,21 @@ private:
     int currentFrame;
     float animationTimer;
     float frameDuration;
-        // ... your existing private variables ...
-        float Damage;
-        float HP = 100.0f;     // Your existing HP (set default to 100.0f)
-        float MaxHP = 100.0f;  // ADD THIS LINE
-        bool WasMining;
-   
-
+    float Damage;
+    float HP = 100.0f;
+    float MaxHP = 100.0f; 
+    float Damage;
+    bool WasMining;
+    int FallHeight;
+    float FallDistance;
+    float BlocksFallen;
+    
 public:
+    bool IsDead = false;
+
     void Spawn();
+
+    void SetHP(int hp);
 
     void UpdatePosX(int velocity);
 
@@ -61,6 +67,7 @@ public:
 
     bool BlockIsVisible(BlockPos Pos);
 
+
     Player();
 
     Player(int PosX, int PosY);
@@ -76,8 +83,8 @@ public:
 
     friend void Move(Player& player, int velocity);
     friend void Mine(BlockPos Pos, Block** Univ, Player player);
-     float GetHP() const;
-     float GetMaxHP() const;
-      void TakeDamage(float amount);
-     void Heal(float amount);
+    float GetHP() const;
+    float GetMaxHP() const;
+    void TakeDamage(float amount);
+    void Heal(float amount);
 };
