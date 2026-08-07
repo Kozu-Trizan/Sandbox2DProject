@@ -80,7 +80,7 @@ public:
 
     void ChangeMiningStatus(bool status);
     void Mine(Camera2D camera);
-
+    float MaxHP = 100.0f;
     friend void Move(Player& player, int velocity);
     friend void Mine(BlockPos Pos, Block** Univ, Player player);
     float GetHP() const;
