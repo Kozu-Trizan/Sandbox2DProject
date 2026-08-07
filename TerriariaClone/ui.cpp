@@ -1,4 +1,4 @@
-#include "UI.h"
+#include "ui.h"
 
 void DrawPlayerHealthBar(const Player& player, float screenX, float screenY) {
     const float barWidth = 200.0f;
