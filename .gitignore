@@ -22,6 +22,8 @@ mono_crash.*
 # Local raylib builds (CPU compatibility setup)
 C:\raylib-src/
 raylib-src/
+# Local raylib configuration (team members have different raylib paths)
+RaylibPath.props
 *.pdb
 [Dd]ebugPublic/
 [Rr]elease/

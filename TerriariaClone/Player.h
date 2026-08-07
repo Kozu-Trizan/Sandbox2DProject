@@ -1,7 +1,8 @@
 #pragma once
 #include "Constant.h"
+#include <vector>
 
-struct Block;
+class Block;
 
 struct BlockPos;
 
@@ -19,9 +20,19 @@ private:
     int BelowBlock;
     float VelocityY;
     bool OnGround;
-    float Damage;
-    float HP;
-    bool WasMining;
+    float animationRow;
+    float jumpAnimationRow;
+    Texture2D walkTexture;
+    Texture2D jumpTexture;
+    int currentFrame;
+    float animationTimer;
+    float frameDuration;
+        // ... your existing private variables ...
+        float Damage;
+        float HP = 100.0f;     // Your existing HP (set default to 100.0f)
+        float MaxHP = 100.0f;  // ADD THIS LINE
+        bool WasMining;
+   
 
 public:
     void Spawn();
@@ -33,6 +44,12 @@ public:
     void Jump(int JumpStep);
 
     void UpdateGravity();
+
+    void UpdateWalkAnimation();
+
+    void SetAnimationRow(float row);
+
+    void SetJumpAnimationRow(float row);
 
     void DrawPlayer();
 
@@ -48,6 +65,8 @@ public:
 
     Player(int PosX, int PosY);
 
+    ~Player();
+
     int getx();
 
     int gety();
@@ -57,4 +76,8 @@ public:
 
     friend void Move(Player& player, int velocity);
     friend void Mine(BlockPos Pos, Block** Univ, Player player);
+     float GetHP() const;
+     float GetMaxHP() const;
+      void TakeDamage(float amount);
+     void Heal(float amount);
 };

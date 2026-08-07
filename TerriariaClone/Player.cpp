@@ -3,7 +3,31 @@
 #include "MapGen.h"
 #include "Player.h"
 #include "IsSolid.h"
+#include "ui.h"
 #include "BresenhamAlgorithm.h"
+// --- Health System Implementation ---
+
+float Player::GetHP() const {
+    return HP;
+}
+
+float Player::GetMaxHP() const {
+    return MaxHP;
+}
+
+void Player::TakeDamage(float amount) {
+    HP -= amount;
+    if (HP < 0.0f) {
+        HP = 0.0f; // Prevents HP from going below 0
+    }
+}
+
+void Player::Heal(float amount) {
+    HP += amount;
+    if (HP > MaxHP) {
+        HP = MaxHP; // Prevents HP from exceeding max capacity
+    }
+}
 
 void Player::Spawn() {
     // Player Spawn Logic
@@ -87,6 +111,31 @@ void Player::UpdateGravity() {
         }
         }
     }
+void Player::UpdateWalkAnimation()
+{
+    animationTimer += GetFrameTime();
+
+    if (animationTimer >= frameDuration)
+    {
+        animationTimer = 0.0f;
+
+        currentFrame++;
+
+        // There are 8 frames in one row
+        if (currentFrame >= 8)
+        {
+            currentFrame = 0;
+        }
+    }
+}
+void Player::SetAnimationRow(float row)
+{
+    this->animationRow = row;
+}
+void Player::SetJumpAnimationRow(float row)
+{
+    this->jumpAnimationRow = row;
+}
     
 int Player::getx()
 {
@@ -97,10 +146,65 @@ int Player::gety()
     return PosY;
 }
 
-void Player::DrawPlayer() {
-    this->player = { (float)this->PosX, (float)this->PosY, (float)this->WidthP, (float)this->HeightP };
-    DrawRectangleRec(player, RAYWHITE);
+
+void Player::DrawPlayer()
+{
+    this->player = {
+        (float)this->PosX,
+        (float)this->PosY,
+        (float)this->WidthP,
+        (float)this->HeightP
+    };
+
+    const int FRAME_WIDTH = 48;
+    const int FRAME_HEIGHT = 64;
+
+    float selectedRow;
+
+    if (this->IsInAir)
+    {
+        selectedRow = this->jumpAnimationRow;
+    }
+    else
+    {
+        selectedRow = this->animationRow;
+    }
+
+    Rectangle source = {
+        (float)(currentFrame * FRAME_WIDTH),
+        animationRow,
+        (float)FRAME_WIDTH,
+        (float)FRAME_HEIGHT
+    };
+
+    Rectangle destination = {
+        (float)this->PosX,
+        (float)this->PosY,
+        (float)FRAME_WIDTH,
+        (float)FRAME_HEIGHT
+    };
+    Texture2D currentTexture;
+    if (this->IsInAir)
+    {
+        currentTexture = this->jumpTexture;
+    }
+    else
+    {
+        currentTexture = this->walkTexture;
+    }
+
+
+    DrawTexturePro(
+        currentTexture,
+        source,
+        this->player,
+        Vector2{ 0.0f, 0.0f },
+        0.0f,
+        WHITE
+    );
 }
+
+
 
 Rectangle& Player::GetPlayer() {
     return this->player;
@@ -163,5 +267,23 @@ Player::Player() {
     this->Damage = 0.2f;
     this->HP = 100;
     this->WasMining = false;
+
+    this->currentFrame = 0;
+    this->animationTimer = 0.0f;
+    this->frameDuration = 0.15f;
+    this->animationRow = 64.0f;
+    this->jumpAnimationRow = 64.0f;
+    // Load texture from the 2D_character folder that you added to the project
+    // Make sure the file (e.g., scarfy.png) is added to the project and copied to the output directory
+    this->walkTexture = LoadTexture("assets/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Walk/walk.png");
+    this->jumpTexture = LoadTexture("assets/2D_character/The Female Adventurer - Free/The Female Adventurer - Free/Jump - NEW/Normal/Jump.png");
+}
+
+
+
+Player::~Player() {
+    // Cleanup textures if they were loaded
+    if (this->walkTexture.id != 0) UnloadTexture(this->walkTexture);
+    if (this->jumpTexture.id != 0) UnloadTexture(this->jumpTexture);
 }
 

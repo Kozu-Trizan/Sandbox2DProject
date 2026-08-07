@@ -9,6 +9,7 @@
 #include "Player.h"
 #include "IsSolid.h"
 #include "Move.h"
+#include "ui.h"
 #include "GetTexture.h"
 
 Block** Universe = nullptr;
@@ -29,6 +30,7 @@ int main() {
     Player player;
     int velocity = 2;
     int JumpHeight = 10;
+    player.UpdateWalkAnimation();
 
     player.Spawn();
     player.DrawPlayer();
@@ -70,9 +72,18 @@ int main() {
         }
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+        player.SetAnimationRow(320.0f);
+        player.SetJumpAnimationRow(320.0f);
+        player.UpdateWalkAnimation();
+
         Move(player,velocity);
        }
         else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+        player.SetAnimationRow(64.0f);
+        player.SetJumpAnimationRow(64.0f);
+        player.UpdateWalkAnimation();
+
+
         Move(player,-velocity);
         }
 
@@ -101,9 +112,13 @@ int main() {
         player.DrawPlayer();
 
         EndMode2D();
+        // --- UI RENDERING (Draw UI here!) ---
+        DrawPlayerHealthBar(player, 20.0f, 20.0f); // 2. Call healthbar function here!
 
         EndDrawing();
-    // ---------------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------------
+
+        CloseWindow();
     }
     DeInitializeTexture();
     CloseWindow();
