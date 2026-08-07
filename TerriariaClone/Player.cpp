@@ -3,7 +3,31 @@
 #include "MapGen.h"
 #include "Player.h"
 #include "IsSolid.h"
+#include "ui.h"
 #include "BresenhamAlgorithm.h"
+// --- Health System Implementation ---
+
+float Player::GetHP() const {
+    return HP;
+}
+
+float Player::GetMaxHP() const {
+    return MaxHP;
+}
+
+void Player::TakeDamage(float amount) {
+    HP -= amount;
+    if (HP < 0.0f) {
+        HP = 0.0f; // Prevents HP from going below 0
+    }
+}
+
+void Player::Heal(float amount) {
+    HP += amount;
+    if (HP > MaxHP) {
+        HP = MaxHP; // Prevents HP from exceeding max capacity
+    }
+}
 
 void Player::Spawn() {
     // Player Spawn Logic
@@ -108,6 +132,22 @@ void Player::SetHP(int hp)
   this->HP = hp;
 }
 
+void Player::UpdateWalkAnimation()
+{
+    animationTimer += GetFrameTime();
+
+    if (animationTimer >= frameDuration)
+    {
+        animationTimer = 0.0f;
+
+        currentFrame++;
+
+        // There are 8 frames in one row
+        if (currentFrame >= 8)
+        {
+            currentFrame = 0;
+        }
+    }
 void Player::UpdateWalkAnimation()
 {
     animationTimer += GetFrameTime();

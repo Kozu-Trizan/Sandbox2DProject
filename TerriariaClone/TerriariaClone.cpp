@@ -10,6 +10,7 @@
 #include "IsSolid.h"
 #include "Move.h"
 #include "GetTexture.h"
+#include "ui.h"
 
 Block** Universe = nullptr;
 int main() {  
@@ -49,9 +50,9 @@ int main() {
     //--------------------------------------------------------------------------------------------------------------------
         camera.target = { player.GetPlayer().x + BLOCK_SIZE / 2, player.GetPlayer().y + BLOCK_SIZE / 2 };
         // Camera zoom controls
-        float PrevZoom = camera.zoom; 
+        float PrevZoom = camera.zoom;
         camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
-        
+
         // Check if zoom boundaries are met
         if (camera.zoom > MaxZoom) {
             camera.zoom = MaxZoom;
@@ -59,7 +60,7 @@ int main() {
         else if (camera.zoom < MinZoom) {
             camera.zoom = MinZoom;
         }
-        
+
         if (WorldBoundaryReached(camera)) {
             camera.zoom = PrevZoom;
         }
@@ -119,34 +120,36 @@ int main() {
         }
          player.UpdateGravity();
         // Breaking Blocks
-         player.Mine(camera);
+        player.Mine(camera);
 
-    //--------------------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------------
 
         BeginDrawing();
 
         // Map Generation
         ClearBackground(WHITE);
-        
+
         DrawBackground();
         DrawParallax(camera);
 
         BeginMode2D(camera);
-        
+
         DrawVisibleWorld(Universe, camera);
 
         player.DrawPlayer();
 
         EndMode2D();
 
+        DrawPlayerHealthBar(player, 20.0f, 20.0f); // 2. Call healthbar function here!
+
         EndDrawing();
-    // ---------------------------------------------------------------------------------------------------------------------------
+        // ---------------------------------------------------------------------------------------------------------------------------
     }
     DeInitializeTexture();
     CloseWindow();
     delete[] Universe[0]; // frees the contiguous data block
     delete[] Universe;
     return 0;
-    
+
 }
 //nix-shell -p raylib gcc --run \ 'g++ TerriariaClone.cpp Player.cpp MapGen.cpp -o game \-lraylib -lm -ldl -lpthread -lGL && ./game'
