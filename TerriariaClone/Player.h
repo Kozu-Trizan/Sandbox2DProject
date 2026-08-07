@@ -83,4 +83,8 @@ public:
 
     friend void Move(Player& player, int velocity);
     friend void Mine(BlockPos Pos, Block** Univ, Player player);
+    float GetHP() const;
+    float GetMaxHP() const;
+    void TakeDamage(float amount);
+    void Heal(float amount);
 };
