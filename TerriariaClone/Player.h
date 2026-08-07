@@ -30,7 +30,9 @@ private:
     float Damage;
     float HP;
     bool WasMining;
-
+    int FallHeight;
+    float FallDistance;
+    float BlocksFallen;
 public:
     void Spawn();
 
