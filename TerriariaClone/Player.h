@@ -37,7 +37,7 @@ private:
 public:
     bool IsDead = false;
 
-    float SoundVolume = 1.0f;
+    float SoundVolume = 0.0f;
 
     void Spawn();
 

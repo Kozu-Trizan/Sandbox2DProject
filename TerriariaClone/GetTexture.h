@@ -1,5 +1,6 @@
 #pragma once
 #include <raylib.h>
+extern Texture2D BlockTexture;
 
 void InitializeTexture();
 void DrawBackground();

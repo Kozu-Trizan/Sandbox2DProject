@@ -9,6 +9,7 @@ Texture2D CloudLayerFront;
 Texture2D CloudLayerMid;
 Texture2D CloudLayerBack;
 Texture2D LoneCloud;
+Texture2D BlockTexture;
 
 
 void InitializeTexture() {
@@ -19,6 +20,7 @@ void InitializeTexture() {
 	CloudLayerMid = LoadTexture("assets/background/Layers/clouds_mg_2.png");
 	CloudLayerBack = LoadTexture("assets/background/Layers/clouds_mg_1.png");
 	LoneCloud = LoadTexture("assets/background/Layers/cloud_lonely.png");
+	BlockTexture = LoadTexture("assets/blocktexture/Textures-16.png");
 }
 
 void DrawBackground() {
@@ -68,4 +70,5 @@ void DeInitializeTexture() {
 	UnloadTexture(CloudLayerMid);
 	UnloadTexture(CloudLayerFront);
 	UnloadTexture(LoneCloud);
+	UnloadTexture(BlockTexture);
 }
