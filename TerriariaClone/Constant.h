@@ -22,6 +22,7 @@ const float CAVE_AMP = 1.2f;
 const int CAVE_OCTAVE = 3;
 const float CAVE_THRESHOLD = 0.48f;
 
+
  // -----------------BLock IDs-----------------------//
 const std::uint8_t AIR_BID = 0;
 const std::uint8_t DIRT_BID = 1;

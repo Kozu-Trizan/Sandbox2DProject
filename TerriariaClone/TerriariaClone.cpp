@@ -15,6 +15,7 @@
 
 Block** Universe = nullptr;
 int main() {  
+    float SOUND_VOLUME = 0.0f;
     Block* UniverseData = new Block[UniverseHeight * UniverseWidth]();
     Universe = new Block * [UniverseHeight];
     for (int i = 0; i < UniverseHeight; i++)
@@ -89,12 +90,12 @@ int main() {
           player.IsDead = true;
         }
         if (IsKeyPressed(KEY_UP)) {
-            player.SoundVolume=player.SoundVolume+0.5f;
-            SetMusicVolume(bgMusic,player.SoundVolume);
+            SOUND_VOLUME=SOUND_VOLUME+0.5f;
+            SetMusicVolume(bgMusic,SOUND_VOLUME);
         }
         if (IsKeyPressed(KEY_DOWN)) {
-            player.SoundVolume=player.SoundVolume-0.5f;
-            SetMusicVolume(bgMusic,player.SoundVolume);
+            SOUND_VOLUME=SOUND_VOLUME-0.5f;
+            SetMusicVolume(bgMusic,SOUND_VOLUME);
         }
         if (IsKeyPressed(KEY_SPACE)) {
             player.Jump(JumpHeight);

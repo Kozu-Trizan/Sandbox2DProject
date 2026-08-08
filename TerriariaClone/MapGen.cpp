@@ -329,10 +329,10 @@ void DrawVisibleWorld(Block **Univ, Camera2D camera) {
             Rectangle source = GetBlockSourceRectangle(Univ[y][x].B_ID);
 
             Rectangle destination = {
-                x * BLOCK_SIZE,
-                y * BLOCK_SIZE,
-                BLOCK_SIZE,
-                BLOCK_SIZE
+                static_cast<float>(x * BLOCK_SIZE),
+                static_cast<float>(y * BLOCK_SIZE),
+                static_cast<float>(BLOCK_SIZE),
+                static_cast<float>(BLOCK_SIZE)
             };
 
             DrawTexturePro(

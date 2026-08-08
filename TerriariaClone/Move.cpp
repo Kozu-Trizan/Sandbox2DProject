@@ -19,7 +19,7 @@ void Move(Player& player, int velocity){
             CanMove = CanMove && !IsSolid(blockX, topRow + i);
         }
         if (CanMove) {
-            player.UpdatePosX(velocity);
+            player.UpdatePosX(static_cast<float>(velocity));
         } else {
             // Snap to block boundary to prevent sub-pixel drift into the wall
             float snappedX = floorf((player.PosX + player.WidthP) / BLOCK_SIZE) * BLOCK_SIZE - player.WidthP;
@@ -32,7 +32,7 @@ void Move(Player& player, int velocity){
             CanMove = CanMove && !IsSolid(blockX, topRow + i);
         }
         if (CanMove) {
-            player.UpdatePosX(velocity);
+            player.UpdatePosX(static_cast<float>(velocity));
         } else {
             // Snap to block boundary
             float snappedX = ceilf(player.PosX / BLOCK_SIZE) * BLOCK_SIZE;

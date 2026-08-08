@@ -14,14 +14,14 @@ void DrawPlayerHealthBar(const Player& player, float screenX, float screenY) {
     else if (healthRatio <= 0.50f) barColor = ORANGE;
 
     // Outer border & dark background
-    DrawRectangle(screenX - 2, screenY - 2, barWidth + 4, barHeight + 4, DARKGRAY);
-    DrawRectangle(screenX, screenY, barWidth, barHeight, BLACK);
+    DrawRectangle(static_cast<int>(screenX - 2), static_cast<int>(screenY - 2), static_cast<int>(barWidth + 4), static_cast<int>(barHeight + 4), DARKGRAY);
+    DrawRectangle(static_cast<int>(screenX), static_cast<int>(screenY), static_cast<int>(barWidth), static_cast<int>(barHeight), BLACK);
 
     // Active health fill
     if (currentFillWidth > 0) {
-        DrawRectangle(screenX, screenY, currentFillWidth, barHeight, barColor);
+        DrawRectangle(static_cast<int>(screenX), static_cast<int>(screenY), static_cast<int>(currentFillWidth), static_cast<int>(barHeight), barColor);
     }
 
     // Health text (e.g. "100 / 100")
-    DrawText(TextFormat("%.0f / %.0f", player.GetHP(), player.GetMaxHP()), screenX + 60, screenY + 3, 15, WHITE);
+    DrawText(TextFormat("%.0f / %.0f", player.GetHP(), player.GetMaxHP()), static_cast<int>(screenX + 60), static_cast<int>(screenY + 3), 15, WHITE);
 }

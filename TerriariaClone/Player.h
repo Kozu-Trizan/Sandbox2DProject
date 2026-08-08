@@ -31,30 +31,24 @@ private:
     float Damage;
     float HP = 100;
     bool WasMining;
+    float FallHeight;
+    float FallDistance;
+    float BlocksFallen;
 
     Inventory inventory;
     int HeldItemCellNo;
 
 public:
+    bool IsDead = false;
+    float MaxHP = 100.0f;
+
     std::vector<int> GetSize();
 
     void Spawn();
 
+    void SetHP(float hp);
+
     void UpdatePosX(float velocity);
-    int FallHeight;
-    float FallDistance;
-    float BlocksFallen;
-    
-public:
-    bool IsDead = false;
-
-    float SoundVolume = 0.0f;
-
-    void Spawn();
-
-    void SetHP(int hp);
-
-    void UpdatePosX(int velocity);
 
     void UpdatePosY(float velocity);
 
@@ -82,15 +76,12 @@ public:
 
     Player();
 
-    Player(int PosX, int PosY);
-
     ~Player();
 
     float getx();
 
     float gety();
 
-    void ChangeMiningStatus(bool status);
     void Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
 
     void PlaceBlock(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
@@ -99,8 +90,6 @@ public:
 
     friend void Move(Player& player, int velocity);
   
-    float MaxHP = 100.0f;
-    friend void Mine(BlockPos Pos, Block** Univ, Player player);
     float GetHP() const;
     float GetMaxHP() const;
     void TakeDamage(float amount);

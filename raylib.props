@@ -8,7 +8,7 @@
 
   <!-- Default raylib location (works for most users) -->
   <PropertyGroup>
-	<RaylibInstallPath Condition="'$(RaylibInstallPath)' == ''">C:\raylib-6.0_win64_msvc16</RaylibInstallPath>
+	<RaylibInstallPath Condition="'$(RaylibInstallPath)' == ''">C:\Raylib\raylib-6.0_win64_msvc16</RaylibInstallPath>
   </PropertyGroup>
 
   <!-- Fallback to C:\raylib if versioned path doesn't exist -->

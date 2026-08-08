@@ -9,6 +9,8 @@
 
 void Player::ChangeHeldItem(int CellNo) {
     this->HeldItemCellNo = CellNo;
+}
+
 // --- Health System Implementation ---
 
 float Player::GetHP() const {
@@ -70,9 +72,9 @@ bool Player::PlayerOccupiesBlock(BlockPos Pos) {
     float playerLeft   = this->PosX;
     float playerRight  = this->PosX + this->WidthP;
 
-    float blockLeft   = Pos.x * BLOCK_SIZE;
+    float blockLeft   = static_cast<float>(Pos.x) * BLOCK_SIZE;
     float blockRight  = blockLeft + BLOCK_SIZE;
-    float blockTop    = Pos.y * BLOCK_SIZE;
+    float blockTop    = static_cast<float>(Pos.y) * BLOCK_SIZE;
     float blockBottom = blockTop + BLOCK_SIZE;
 
     // Strict overlap: both intervals must overlap by more than a small epsilon
@@ -138,10 +140,10 @@ void Player::Jump(int JumpStep) {
 }
 void Player::UpdateGravity() {
     this->VelocityY = this->VelocityY + 0.4f;
-    LeftBlock = static_cast<int>(this->PosX/BLOCK_SIZE);
-    RightBlock = static_cast<int>((this->PosX+this->WidthP-1)/BLOCK_SIZE);
+    LeftBlock = static_cast<int>(this->PosX / BLOCK_SIZE);
+    RightBlock = static_cast<int>((this->PosX + this->WidthP - 1) / BLOCK_SIZE);
 
-    if(this->VelocityY < 0) // Moving UP (jumping)
+    if (this->VelocityY < 0) // Moving UP (jumping)
     {
         float futureTop = this->PosY + this->VelocityY;
         AboveBlock = static_cast<int>(futureTop / BLOCK_SIZE);
@@ -149,15 +151,15 @@ void Player::UpdateGravity() {
         bool leftClear = !IsSolid(this->LeftBlock, this->AboveBlock);
         bool rightClear = !IsSolid(this->RightBlock, this->AboveBlock);
 
-        if(leftClear && rightClear)
+        if (leftClear && rightClear)
         {
-          if(IsInAir==0)
-          {
-            this->FallHeight=this->PosY;
-          }
+            if (IsInAir == 0)
+            {
+                this->FallHeight = this->PosY;
+            }
             UpdatePosY(this->VelocityY);
         }
-        else{
+        else {
             VelocityY = 0;
             // Snap head to bottom of the ceiling block to eliminate float overshoot
             this->PosY = static_cast<float>((this->AboveBlock + 1) * BLOCK_SIZE);
@@ -171,36 +173,35 @@ void Player::UpdateGravity() {
         bool leftClear = !IsSolid(this->LeftBlock, this->BelowBlock);
         bool rightClear = !IsSolid(this->RightBlock, this->BelowBlock);
 
-        if(leftClear && rightClear)
+        if (leftClear && rightClear)
         {
             UpdatePosY(this->VelocityY);
             IsInAir = true;
         }
-        else{
-          if(IsInAir==1)
-          {
-            this->FallDistance = this->PosY - this->FallHeight;
-            this->BlocksFallen = this->FallDistance/BLOCK_SIZE;
-            if(this->BlocksFallen>10)
+        else {
+            if (IsInAir == 1)
             {
-              this->HP = this->HP - (this->BlocksFallen - 10)*10;
+                this->FallDistance = this->PosY - this->FallHeight;
+                this->BlocksFallen = this->FallDistance / BLOCK_SIZE;
+                if (this->BlocksFallen > 10)
+                {
+                    this->HP = this->HP - (this->BlocksFallen - 10) * 10;
+                }
             }
-          }
             VelocityY = 0;
             this->IsInAir = false;
             // Snap feet to top of the ground block to eliminate float overshoot
             this->PosY = static_cast<float>(this->BelowBlock * BLOCK_SIZE - this->HeightP);
         }
+
+        if (this->HP <= 0)
+        {
+            this->IsDead = true;
+        }
     }
 }
-            if(this->HP<=0)
-            {
-              this->IsDead = true; 
-            }
-        }
-        }
-    }
-void Player::SetHP(int hp)
+
+void Player::SetHP(float hp)
 {
   this->HP = hp;
 }
@@ -380,6 +381,10 @@ Player::Player() {
 
     this->inventory = Inventory(10);
     this->HeldItemCellNo = 1;
+
+    this->FallHeight = 0;
+    this->FallDistance = 0;
+    this->BlocksFallen = 0;
 }
 
 
