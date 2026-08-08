@@ -10,6 +10,7 @@
 #include "IsSolid.h"
 #include "Move.h"
 #include "GetTexture.h"
+#include "LightMap.h"
 #include "ui.h"
 
 Block** Universe = nullptr;
@@ -24,6 +25,7 @@ int main() {
     InitAudioDevice();
     SetTargetFPS(60);
     InitializeTexture();
+    InitLightMap();
 
     GenerateVisibleWorld(Universe, MAP_FREQ, MAP_AMP, MAP_BASE_LEVEL, MAP_OCTAVE);
 
@@ -50,27 +52,7 @@ int main() {
         UpdateMusicStream(bgMusic);
         // Update
     //--------------------------------------------------------------------------------------------------------------------
-        camera.target = { player.GetPlayer().x + BLOCK_SIZE / 2, player.GetPlayer().y + BLOCK_SIZE / 2 };
-        // Camera zoom controls
-        float PrevZoom = camera.zoom;
-        camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
-
-        // Check if zoom boundaries are met
-        if (camera.zoom > MaxZoom) {
-            camera.zoom = MaxZoom;
-        }
-        else if (camera.zoom < MinZoom) {
-            camera.zoom = MinZoom;
-        }
-
-        if (WorldBoundaryReached(camera)) {
-            camera.zoom = PrevZoom;
-        }
-        
-            
-        if (player.PlayerCanFall()) {
-            player.UpdatePosY(velocity);
-        }
+    //--------------------------------------------------------------------------------------------------------------------
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
           if ((IsKeyDown(KEY_RIGHT) && IsKeyDown(KEY_LEFT_SHIFT)) ||( IsKeyDown(KEY_D)&& IsKeyDown(KEY_LEFT_SHIFT)) )
@@ -129,8 +111,56 @@ int main() {
           player.Spawn();
         }
          player.UpdateGravity();
-        // Breaking Blocks
-        player.Mine(camera);
+
+         // Camera Update
+         camera.target = { player.getx() + BLOCK_SIZE / 2, player.gety() + BLOCK_SIZE / 2 };
+         
+         // Camera zoom controls
+         float PrevZoom = camera.zoom; 
+         camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
+         
+         // Check if zoom boundaries are met
+         if (camera.zoom > MaxZoom) {
+             camera.zoom = MaxZoom;
+         }
+         else if (camera.zoom < MinZoom) {
+             camera.zoom = MinZoom;
+         }
+         
+         if (WorldBoundaryReached(camera)) {
+             camera.zoom = PrevZoom;
+         }
+
+
+         Vector2 PosMouse = GetMousePosition(); // MousePosition function returns coordinates in Screen Space.
+         PosMouse = GetScreenToWorld2D(PosMouse, camera); // To convert the Screen space coordinates to world space coordinates that the logic is compatible with
+         BlockPos PosMouseMap = { static_cast<int>(PosMouse.x / BLOCK_SIZE), static_cast<int>(PosMouse.y / BLOCK_SIZE) };
+         Block& TargetBlock = Universe[PosMouseMap.y][PosMouseMap.x];
+         Rectangle Outline = { 0 };
+         if (TargetBlock.GetLightDecay() > 0) {
+             Outline = { static_cast<float>(static_cast<int>(PosMouse.x / BLOCK_SIZE) * BLOCK_SIZE), static_cast<float>(static_cast<int>(PosMouse.y / BLOCK_SIZE) * BLOCK_SIZE), (float)BLOCK_SIZE, (float)BLOCK_SIZE };
+         }
+        
+         // Breaking Blocks
+         player.Mine(camera, PosMouseMap, TargetBlock);
+
+         int HeldItemCellNo = GetKeyPressed();
+         if (
+             HeldItemCellNo == KEY_ZERO ||
+             HeldItemCellNo == KEY_ONE ||
+             HeldItemCellNo == KEY_TWO ||
+             HeldItemCellNo == KEY_THREE ||
+             HeldItemCellNo == KEY_FOUR ||
+             HeldItemCellNo == KEY_FIVE ||
+             HeldItemCellNo == KEY_SIX ||
+             HeldItemCellNo == KEY_SEVEN ||
+             HeldItemCellNo == KEY_EIGHT ||
+             HeldItemCellNo == KEY_NINE
+             ) player.ChangeHeldItem(HeldItemCellNo - 48); // Raylib KEY_ZERO = 48
+
+         // Placing Blocks
+         player.PlaceBlock(camera, PosMouseMap, TargetBlock);
+        
 
         //--------------------------------------------------------------------------------------------------------------------
 
@@ -147,6 +177,11 @@ int main() {
         DrawVisibleWorld(Universe, camera);
 
         player.DrawPlayer();
+        DrawLightMap(Universe, camera);
+        if (TargetBlock.B_ID != Air.B_ID) {
+            DrawRectangleLinesEx(Outline, 0.4f, LIGHTGRAY);
+        }
+        
 
         EndMode2D();
 
@@ -155,6 +190,7 @@ int main() {
         EndDrawing();
         // ---------------------------------------------------------------------------------------------------------------------------
     }
+    DeInitLightMap();
     UnloadMusicStream(bgMusic);
     CloseAudioDevice(); 
     DeInitializeTexture();

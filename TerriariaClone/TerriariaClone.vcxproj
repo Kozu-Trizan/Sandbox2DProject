@@ -145,6 +145,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Blocks.cpp" />
     <ClCompile Include="BresenhamAlgorithm.cpp" />
     <ClCompile Include="GetTexture.cpp" />
     <ClCompile Include="Inventory.cpp" />
@@ -153,6 +154,8 @@
     <ClCompile Include="MapGen.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="TerriariaClone.cpp" />
+    <ClCompile Include="LightMap.cpp" />
+    <ClCompile Include="WavefrontPropagation.cpp" />
     <ClCompile Include="ui.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +167,8 @@
     <ClInclude Include="Move.h" />
     <ClInclude Include="MapGen.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="LightMap.h" />
+    <ClInclude Include="WavefrontPropagation.h" />
     <ClInclude Include="ui.h" />
   </ItemGroup>
   <ItemGroup>

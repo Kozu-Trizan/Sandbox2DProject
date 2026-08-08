@@ -1,6 +1,7 @@
 #pragma once
 #include "Constant.h"
 #include <vector>
+#include "Inventory.h"
 
 class Block;
 
@@ -8,7 +9,7 @@ struct BlockPos;
 
 class Player {
 private:
-    int PosX, PosY;
+    float PosX, PosY;
     int HeightP, WidthP;
     Color colorP;
     bool IsInAir;
@@ -30,6 +31,16 @@ private:
     float Damage;
     float HP = 100;
     bool WasMining;
+
+    Inventory inventory;
+    int HeldItemCellNo;
+
+public:
+    std::vector<int> GetSize();
+
+    void Spawn();
+
+    void UpdatePosX(float velocity);
     int FallHeight;
     float FallDistance;
     float BlocksFallen;
@@ -45,7 +56,7 @@ public:
 
     void UpdatePosX(int velocity);
 
-    void UpdatePosY(int velocity);
+    void UpdatePosY(float velocity);
 
     void Jump(int JumpStep);
 
@@ -67,6 +78,7 @@ public:
 
     bool BlockIsVisible(BlockPos Pos);
 
+    bool PlayerOccupiesBlock(BlockPos Pos);
 
     Player();
 
@@ -74,14 +86,20 @@ public:
 
     ~Player();
 
-    int getx();
+    float getx();
 
-    int gety();
+    float gety();
 
     void ChangeMiningStatus(bool status);
-    void Mine(Camera2D camera);
-    float MaxHP = 100.0f;
+    void Mine(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
+
+    void PlaceBlock(Camera2D camera, BlockPos PosMouseMap, Block& MineBlock);
+
+    void ChangeHeldItem(int CellNo);
+
     friend void Move(Player& player, int velocity);
+  
+    float MaxHP = 100.0f;
     friend void Mine(BlockPos Pos, Block** Univ, Player player);
     float GetHP() const;
     float GetMaxHP() const;

@@ -54,7 +54,7 @@ void Parallax(Camera2D camera, Texture2D texture, float PosY, float ParallaxSpee
 }
 
 void DrawParallax(Camera2D camera) {
-	Parallax(camera, Mountain, -60.0f, 0.01f);
+	Parallax(camera, Mountain, -30.0f, 0.01f, 1.5f);
 	Parallax(camera, BgCloud, static_cast<float>(Mountain.height) / 3.0f, 0.05f);
 	Parallax(camera, CloudLayerBack, static_cast<float>(Mountain.height) / 2, 0.08f);
 	Parallax(camera, CloudLayerMid, static_cast<float>(Mountain.height) / 2);
