@@ -45,6 +45,9 @@ public:
     void SetLightValue(std::uint8_t NewLightValue);
 };
 
+Rectangle GetBlockSourceRectangle(std::uint8_t blockID);
+Color GetBlockColor(std::uint8_t blockID);
+
 // 'inline' allows these to stay in the header file safely
 const inline Block Air(AIR_BID, AIR_BHP, AIR_WALL_ID, MAX_LIGHT_VAL, AIR_LIGHT_DECAY);
 const inline Block Dirt(DIRT_BID, DIRT_BHP, DIRT_WALL_ID, 0, DIRT_LIGHT_DECAY);

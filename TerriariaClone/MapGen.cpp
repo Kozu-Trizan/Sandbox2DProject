@@ -204,7 +204,7 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
             }
             else {
                 // Determine the block type based on depth
-                bool isStoneLayer = (y > SurfaceY + 60);
+                bool isStoneLayer = (y > SurfaceY + 5);
                 Block fillBlock = isStoneLayer ? Stone : Dirt;
 
                 // Only calculate cave noise deep enough underground
@@ -322,41 +322,7 @@ void Automata(Block **Univ, Block **UnivBuffer) {
         }
     }
 }
-// Returns the source rectangle for the block texture.
-// If no texture is available, returns a rectangle with a negative width/height.
-Rectangle GetBlockSourceRectangle(std::uint8_t blockID)
-{
-    switch (blockID)
-    {
-    case DIRT_BID:
-        return { 0, 29*16, 16, 16 };
-    case GRASS_BID:
-        return { 1*16, 29*16, 16, 16 };
-    case STONE_BID:
-        return { 16, 0, 16, 16 };
-    default:
-        return { -1.0f, -1.0f, -1.0f, -1.0f };
-    }
-}
 
-// Returns a placeholder color for each block type.
-// Replace with texture-based rendering later.
-Color GetBlockColor(std::uint8_t blockID)
-{
-    switch (blockID)
-    {
-    case DIRT_BID:
-        return { 139, 90, 43, 255 };    // Brown
-    case GRASS_BID:
-        return { 34, 139, 34, 255 };     // Forest green
-    case STONE_BID:
-        return { 136, 140, 141, 255 };   // Gray
-    case WOOD_BID:
-        return { 139, 69, 19, 255 };     // Saddle brown
-    default:
-        return MAGENTA;                  // Unmapped block — easy to spot
-    }
-}
 
 void DrawVisibleWorld(Block **Univ, Camera2D camera) {
     Vector2 TopLeftBound = GetScreenToWorld2D(Vector2{ 0, 0 }, camera);
