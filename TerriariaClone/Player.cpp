@@ -253,7 +253,7 @@ void Player::DrawPlayer()
     };
 
     const int FRAME_WIDTH = 48;
-    const int FRAME_HEIGHT = 64;
+    const int FRAME_HEIGHT = 48;
 
     float selectedRow;
 
@@ -274,8 +274,8 @@ void Player::DrawPlayer()
     };
 
     Rectangle destination = {
-        (float)this->PosX,
-        (float)this->PosY,
+        (float)this->PosX-16,
+        (float)this->PosY -10 ,
         (float)FRAME_WIDTH,
         (float)FRAME_HEIGHT
     };
@@ -293,7 +293,7 @@ void Player::DrawPlayer()
     DrawTexturePro(
         currentTexture,
         source,
-        this->player,
+        destination,
         Vector2{ 0.0f, 0.0f },
         0.0f,
         WHITE
@@ -351,7 +351,7 @@ bool Player::BlockIsVisible(BlockPos Pos) {
 Player::Player() {
     this->PosX = 0.0f;
     this->PosY = 0.0f;
-    this->HeightP = BLOCK_SIZE * 3;
+    this->HeightP = BLOCK_SIZE * 2;
     this->WidthP = BLOCK_SIZE;
     this->colorP = RAYWHITE;
     this->IsInAir = true;
