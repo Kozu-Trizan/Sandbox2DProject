@@ -306,6 +306,9 @@ Rectangle GetBlockSourceRectangle(std::uint8_t blockID)
     case 3: // Stone
         return { 16, 0, 16, 16 };
 
+    case 4: // Wood
+        return { 32, 0, 16, 16 };
+
     default:
         return { 0, 0, 0, 0 };
     }
