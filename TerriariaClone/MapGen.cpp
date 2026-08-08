@@ -8,7 +8,6 @@
 #include "MapGen.h"
 #include "WavefrontPropagation.h"
 #include"GetTexture.h"
-Rectangle GetBlockSourceRectangle(std::uint8_t blockID);
 
 // Perlin1D class
 
@@ -204,17 +203,21 @@ void GenerateVisibleWorld(Block **Univ, float Frequency, float Amplitude, int Ba
                 Univ[y][x] = Grass;
             }
             else {
+                // Determine the block type based on depth
+                bool isStoneLayer = (y > SurfaceY + 5);
+                Block fillBlock = isStoneLayer ? Stone : Dirt;
+
                 // Only calculate cave noise deep enough underground
                 if (y > SurfaceY + 30) {
                     float CaveNoise = NoiseForCave(Cave, x, y, CAVE_FREQ_X, CAVE_FREQ_Y, CAVE_AMP, CAVE_OCTAVE);
                     if (CaveNoise > CAVE_THRESHOLD) {
                         Univ[y][x] = Air;
-                        Univ[y][x].WallID = Dirt.WallID;
+                        Univ[y][x].WallID = fillBlock.WallID;
                         Univ[y][x].SetLightValue(0);
                         continue;
                     }
                 }
-                Univ[y][x] = Dirt;
+                Univ[y][x] = fillBlock;
             }
         }
     }
@@ -247,7 +250,6 @@ void Automata(Block **Univ, Block **UnivBuffer) {
         std::memcpy(UnivBuffer[i], Univ[i], sizeof(Block) * UniverseWidth);
     }
 
-    Block ReplacementBlock = Dirt;
     for (int x = 2; x < UniverseWidth - 2; x++){
         for (int y = 2; y < UniverseHeight - 2; y++){
             int Dilation = 0;   // Reset per cell
@@ -274,7 +276,34 @@ void Automata(Block **Univ, Block **UnivBuffer) {
                 (UnivBuffer[(y + 1)][(x + 1)].B_ID == Air.B_ID) ? Errosion++ : Errosion += 0;
             }
             if (Dilation >= 6) {
-                Univ[y][x] = ReplacementBlock;
+                // Pick the most common non-air neighbor block type for filling
+                // This prevents Stone being incorrectly replaced by Dirt at layer boundaries
+                int counts[256] = {0};
+                static constexpr int ndx[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+                static constexpr int ndy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+                int firstSolidIdx = -1;
+                for (int n = 0; n < 8; n++) {
+                    std::uint8_t nid = UnivBuffer[y + ndy[n]][x + ndx[n]].B_ID;
+                    if (nid != Air.B_ID) {
+                        counts[nid]++;
+                        if (firstSolidIdx < 0) firstSolidIdx = n;
+                    }
+                }
+                std::uint8_t bestID = DIRT_BID;
+                int bestCount = 0;
+                for (int c = 1; c < 256; c++) {
+                    if (counts[c] > bestCount) {
+                        bestCount = counts[c];
+                        bestID = static_cast<std::uint8_t>(c);
+                    }
+                }
+                // Copy from first solid neighbor to inherit properties like WallID, LightDecay
+                if (firstSolidIdx >= 0) {
+                    Univ[y][x] = UnivBuffer[y + ndy[firstSolidIdx]][x + ndx[firstSolidIdx]];
+                }
+                // Overwrite B_ID with the majority winner
+                Univ[y][x].B_ID = bestID;
+                Univ[y][x].RestoreHealth();
             }
             if (Errosion >= 6) {
                 std::uint8_t InheritedWallID = 0;
@@ -293,23 +322,7 @@ void Automata(Block **Univ, Block **UnivBuffer) {
         }
     }
 }
-Rectangle GetBlockSourceRectangle(std::uint8_t blockID)
-{
-    switch (blockID)
-    {
-    case 1: // Dirt
-        return { 0, 29*16 , 16, 16 };
 
-    case 2: // Grass
-        return { 1*16 , 29*16, 16, 16 };
-
-    case 3: // Stone
-        return { 16, 0, 16, 16 };
-
-    default:
-        return { 0, 0, 0, 0 };
-    }
-}
 
 void DrawVisibleWorld(Block **Univ, Camera2D camera) {
     Vector2 TopLeftBound = GetScreenToWorld2D(Vector2{ 0, 0 }, camera);
@@ -319,30 +332,35 @@ void DrawVisibleWorld(Block **Univ, Camera2D camera) {
         if (y < 0 || y >= UniverseHeight) continue;
         for (int x = static_cast<int>(TopLeftBound.x / BLOCK_SIZE); x < static_cast<int>(BottomRightBound.x / BLOCK_SIZE) + 1; x++) {
             if (x < 0 || x >= UniverseWidth) continue;
-            if (Univ[y][x].B_ID == 0) {
+            if (Univ[y][x].B_ID == AIR_BID) {
                 if (Univ[y][x].WallID != 0) {
                     DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, { 84, 69, 49, 255 }); // Walls
                 }
                 continue;
             }
-          
+
             Rectangle source = GetBlockSourceRectangle(Univ[y][x].B_ID);
 
-            Rectangle destination = {
-                static_cast<float>(x * BLOCK_SIZE),
-                static_cast<float>(y * BLOCK_SIZE),
-                static_cast<float>(BLOCK_SIZE),
-                static_cast<float>(BLOCK_SIZE)
-            };
+            if (source.width > 0 && source.height > 0) {
+                Rectangle destination = {
+                    static_cast<float>(x * BLOCK_SIZE),
+                    static_cast<float>(y * BLOCK_SIZE),
+                    static_cast<float>(BLOCK_SIZE),
+                    static_cast<float>(BLOCK_SIZE)
+                };
 
-            DrawTexturePro(
-                BlockTexture,
-                source,
-                destination,
-                { 0, 0 },
-                0.0f,
-                WHITE
-            );
+                DrawTexturePro(
+                    BlockTexture,
+                    source,
+                    destination,
+                    { 0, 0 },
+                    0.0f,
+                    WHITE
+                );
+            } else {
+                Color blockColor = GetBlockColor(Univ[y][x].B_ID);
+                DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, blockColor);
+            }
         }
     }
 }
