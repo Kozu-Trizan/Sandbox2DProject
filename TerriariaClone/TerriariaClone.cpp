@@ -11,9 +11,9 @@
 #include "Move.h"
 #include "GetTexture.h"
 #include "LightMap.h"
+#include "ui.h"
 
 Block** Universe = nullptr;
-
 int main() {  
     Block* UniverseData = new Block[UniverseHeight * UniverseWidth]();
     Universe = new Block * [UniverseHeight];
@@ -22,6 +22,7 @@ int main() {
         Universe[i] = UniverseData + i * UniverseWidth;
     }
     InitWindow(ScreenWidth, ScreenHeight, "TerriariaProject");
+    InitAudioDevice();
     SetTargetFPS(60);
     InitializeTexture();
     InitLightMap();
@@ -30,12 +31,12 @@ int main() {
 
     Player player;
     int velocity = 2;
-    int JumpHeight = 10;
+    int JumpHeight = 6;
     player.UpdateWalkAnimation();
 
     player.Spawn();
     player.DrawPlayer();
-
+    Music bgMusic = LoadMusicStream("assets/music/JNKm6waftWQ-f287bdc79a08e3dbfa6be51ce676564e649.mp3");
     //Camera Configurations
     Camera2D camera = { 0 };
 
@@ -46,13 +47,22 @@ int main() {
 
     float MaxZoom = 3.0f;
     float MinZoom = 0.1f;
-
+    PlayMusicStream(bgMusic);
     while (!WindowShouldClose()) {
+        UpdateMusicStream(bgMusic);
         // Update
     //--------------------------------------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------------------------------------
 
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+          if ((IsKeyDown(KEY_RIGHT) && IsKeyDown(KEY_LEFT_SHIFT)) ||( IsKeyDown(KEY_D)&& IsKeyDown(KEY_LEFT_SHIFT)) )
+          {
+            player.SetAnimationRow(2*320.0f);
+            player.SetJumpAnimationRow(2*320.0f);
+            player.UpdateWalkAnimation();
+
+             Move(player,2*velocity);
+          }
         player.SetAnimationRow(320.0f);
         player.SetJumpAnimationRow(320.0f);
         player.UpdateWalkAnimation();
@@ -60,16 +70,45 @@ int main() {
         Move(player,velocity);
        }
         else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+           if ((IsKeyDown(KEY_LEFT) && IsKeyDown(KEY_LEFT_SHIFT)) ||( IsKeyDown(KEY_A)&& IsKeyDown(KEY_LEFT_SHIFT)) )
+          {
+            player.SetAnimationRow(2*320.0f);
+            player.SetJumpAnimationRow(2*320.0f);
+            player.UpdateWalkAnimation();
+
+             Move(player,-2*velocity);
+          }
         player.SetAnimationRow(64.0f);
         player.SetJumpAnimationRow(64.0f);
         player.UpdateWalkAnimation();
-
-
         Move(player,-velocity);
         }
 
+        if (IsKeyDown(KEY_K))
+        {
+          player.IsDead = true;
+        }
+        if (IsKeyPressed(KEY_UP)) {
+            player.SoundVolume=player.SoundVolume+0.5f;
+            SetMusicVolume(bgMusic,player.SoundVolume);
+        }
+        if (IsKeyPressed(KEY_DOWN)) {
+            player.SoundVolume=player.SoundVolume-0.5f;
+            SetMusicVolume(bgMusic,player.SoundVolume);
+        }
         if (IsKeyPressed(KEY_SPACE)) {
             player.Jump(JumpHeight);
+        }
+        if(player.IsDead == true)
+        {
+          GenerateVisibleWorld(Universe,
+                         MAP_FREQ,
+                         MAP_AMP,
+                         MAP_BASE_LEVEL,
+                         MAP_OCTAVE);
+          player.IsDead = false;
+          player.SetHP(100);
+          player.Spawn();
         }
          player.UpdateGravity();
 
@@ -123,18 +162,18 @@ int main() {
          player.PlaceBlock(camera, PosMouseMap, TargetBlock);
         
 
-    //--------------------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------------
 
         BeginDrawing();
 
         // Map Generation
         ClearBackground(WHITE);
-        
+
         DrawBackground();
         DrawParallax(camera);
 
         BeginMode2D(camera);
-        
+
         DrawVisibleWorld(Universe, camera);
 
         player.DrawPlayer();
@@ -146,15 +185,19 @@ int main() {
 
         EndMode2D();
 
+        DrawPlayerHealthBar(player, 20.0f, 20.0f); // 2. Call healthbar function here!
+
         EndDrawing();
-    // ---------------------------------------------------------------------------------------------------------------------------
+        // ---------------------------------------------------------------------------------------------------------------------------
     }
     DeInitLightMap();
+    UnloadMusicStream(bgMusic);
+    CloseAudioDevice(); 
     DeInitializeTexture();
     CloseWindow();
     delete[] Universe[0]; // frees the contiguous data block
     delete[] Universe;
     return 0;
-    
+
 }
 //nix-shell -p raylib gcc --run \ 'g++ TerriariaClone.cpp Player.cpp MapGen.cpp -o game \-lraylib -lm -ldl -lpthread -lGL && ./game'

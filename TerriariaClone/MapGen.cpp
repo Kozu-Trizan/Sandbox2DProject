@@ -2,10 +2,13 @@
 #include <random>
 #include <numeric>
 #include <cstring>
+#include<algorithm>
 #include "Constant.h"
 #include "Blocks.h"
 #include "MapGen.h"
 #include "WavefrontPropagation.h"
+#include"GetTexture.h"
+Rectangle GetBlockSourceRectangle(std::uint8_t blockID);
 
 // Perlin1D class
 
@@ -290,6 +293,23 @@ void Automata(Block **Univ, Block **UnivBuffer) {
         }
     }
 }
+Rectangle GetBlockSourceRectangle(std::uint8_t blockID)
+{
+    switch (blockID)
+    {
+    case 1: // Dirt
+        return { 0, 29*16 , 16, 16 };
+
+    case 2: // Grass
+        return { 1*16 , 29*16, 16, 16 };
+
+    case 3: // Stone
+        return { 16, 0, 16, 16 };
+
+    default:
+        return { 0, 0, 0, 0 };
+    }
+}
 
 void DrawVisibleWorld(Block **Univ, Camera2D camera) {
     Vector2 TopLeftBound = GetScreenToWorld2D(Vector2{ 0, 0 }, camera);
@@ -305,12 +325,24 @@ void DrawVisibleWorld(Block **Univ, Camera2D camera) {
                 }
                 continue;
             }
-            else if (Univ[y][x].B_ID == 1) {
-                DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, Color{ 127, 106, 79, 255 });
-            }
-            else if (Univ[y][x].B_ID == 2) {
-                DrawRectangle(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE, Color{ 0, 228, 48, 255 });
-            }
+          
+            Rectangle source = GetBlockSourceRectangle(Univ[y][x].B_ID);
+
+            Rectangle destination = {
+                x * BLOCK_SIZE,
+                y * BLOCK_SIZE,
+                BLOCK_SIZE,
+                BLOCK_SIZE
+            };
+
+            DrawTexturePro(
+                BlockTexture,
+                source,
+                destination,
+                { 0, 0 },
+                0.0f,
+                WHITE
+            );
         }
     }
 }

@@ -29,7 +29,7 @@ private:
     float animationTimer;
     float frameDuration;
     float Damage;
-    float HP;
+    float HP = 100;
     bool WasMining;
 
     Inventory inventory;
@@ -41,6 +41,20 @@ public:
     void Spawn();
 
     void UpdatePosX(float velocity);
+    int FallHeight;
+    float FallDistance;
+    float BlocksFallen;
+    
+public:
+    bool IsDead = false;
+
+    float SoundVolume = 0.0f;
+
+    void Spawn();
+
+    void SetHP(int hp);
+
+    void UpdatePosX(int velocity);
 
     void UpdatePosY(float velocity);
 
@@ -84,4 +98,11 @@ public:
     void ChangeHeldItem(int CellNo);
 
     friend void Move(Player& player, int velocity);
+  
+    float MaxHP = 100.0f;
+    friend void Mine(BlockPos Pos, Block** Univ, Player player);
+    float GetHP() const;
+    float GetMaxHP() const;
+    void TakeDamage(float amount);
+    void Heal(float amount);
 };

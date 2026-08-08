@@ -3,11 +3,34 @@
 #include "MapGen.h"
 #include "Player.h"
 #include "IsSolid.h"
+#include "ui.h"
 #include "BresenhamAlgorithm.h"
 #include "WavefrontPropagation.h"
 
 void Player::ChangeHeldItem(int CellNo) {
     this->HeldItemCellNo = CellNo;
+// --- Health System Implementation ---
+
+float Player::GetHP() const {
+    return HP;
+}
+
+float Player::GetMaxHP() const {
+    return MaxHP;
+}
+
+void Player::TakeDamage(float amount) {
+    HP -= amount;
+    if (HP < 0.0f) {
+        HP = 0.0f; // Prevents HP from going below 0
+    }
+}
+
+void Player::Heal(float amount) {
+    HP += amount;
+    if (HP > MaxHP) {
+        HP = MaxHP; // Prevents HP from exceeding max capacity
+    }
 }
 
 void Player::Spawn() {
@@ -21,6 +44,11 @@ void Player::Spawn() {
 
     this->PosX = spawnX * BLOCK_SIZE;
     this->PosY = spawnY * BLOCK_SIZE - this->HeightP;
+    this->VelocityY = 0;
+    this->IsInAir = false;
+    this->FallHeight = this->PosY;
+    this->FallDistance = 0;
+    this->BlocksFallen = 0;
 }
 
 void Player::UpdatePosX(float velocity) {
@@ -123,6 +151,10 @@ void Player::UpdateGravity() {
 
         if(leftClear && rightClear)
         {
+          if(IsInAir==0)
+          {
+            this->FallHeight=this->PosY;
+          }
             UpdatePosY(this->VelocityY);
         }
         else{
@@ -145,6 +177,15 @@ void Player::UpdateGravity() {
             IsInAir = true;
         }
         else{
+          if(IsInAir==1)
+          {
+            this->FallDistance = this->PosY - this->FallHeight;
+            this->BlocksFallen = this->FallDistance/BLOCK_SIZE;
+            if(this->BlocksFallen>10)
+            {
+              this->HP = this->HP - (this->BlocksFallen - 10)*10;
+            }
+          }
             VelocityY = 0;
             this->IsInAir = false;
             // Snap feet to top of the ground block to eliminate float overshoot
@@ -152,6 +193,18 @@ void Player::UpdateGravity() {
         }
     }
 }
+            if(this->HP<=0)
+            {
+              this->IsDead = true; 
+            }
+        }
+        }
+    }
+void Player::SetHP(int hp)
+{
+  this->HP = hp;
+}
+
 void Player::UpdateWalkAnimation()
 {
     animationTimer += GetFrameTime();
@@ -169,6 +222,7 @@ void Player::UpdateWalkAnimation()
         }
     }
 }
+
 void Player::SetAnimationRow(float row)
 {
     this->animationRow = row;
